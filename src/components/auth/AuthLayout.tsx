@@ -13,7 +13,7 @@ export const AuthLayout = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ email: '', password: '', fullName: '', businessName: '' });
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
   const { login, signup } = useAuthStore();
 
   // Pre-fill demo credentials
@@ -25,6 +25,11 @@ export const AuthLayout = () => {
     e.preventDefault();
     setIsLoading(true);
     setMessage(null);
+    
+    // Show info message for demo account
+    if (loginData.email === 'demo@yourapp.com') {
+      setMessage({ type: 'info', text: 'Setting up demo account with sample data...' });
+    }
     
     try {
       const result = await login(loginData.email, loginData.password);
@@ -72,8 +77,16 @@ export const AuthLayout = () => {
         </CardHeader>
         <CardContent>
           {message && (
-            <Alert className={`mb-4 ${message.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
-              <AlertDescription className={message.type === 'error' ? 'text-red-700' : 'text-green-700'}>
+            <Alert className={`mb-4 ${
+              message.type === 'error' ? 'border-red-500' : 
+              message.type === 'success' ? 'border-green-500' : 
+              'border-blue-500'
+            }`}>
+              <AlertDescription className={
+                message.type === 'error' ? 'text-red-700' : 
+                message.type === 'success' ? 'text-green-700' : 
+                'text-blue-700'
+              }>
                 {message.text}
               </AlertDescription>
             </Alert>
@@ -96,6 +109,9 @@ export const AuthLayout = () => {
                 >
                   Use Demo Credentials
                 </Button>
+                <p className="text-xs text-blue-600 mt-2">
+                  Email: demo@yourapp.com | Password: demo123
+                </p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
@@ -125,7 +141,7 @@ export const AuthLayout = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
+                      {loginData.email === 'demo@yourapp.com' ? 'Setting up demo...' : 'Signing in...'}
                     </>
                   ) : (
                     'Sign In'

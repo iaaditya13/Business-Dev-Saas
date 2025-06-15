@@ -65,6 +65,60 @@ export const useAuthStore = create<AuthStore>()(
 
       login: async (email: string, password: string) => {
         try {
+          // Check if this is the demo account and it doesn't exist yet
+          if (email === 'demo@yourapp.com') {
+            // First try to sign in
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email,
+              password
+            });
+
+            // If sign in fails because user doesn't exist, create the demo account
+            if (signInError && signInError.message.includes('Invalid login credentials')) {
+              console.log('Demo account not found, creating it...');
+              
+              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                  emailRedirectTo: `${window.location.origin}/`,
+                  data: {
+                    full_name: 'Demo User',
+                    business_name: 'Demo Business'
+                  }
+                }
+              });
+
+              if (signUpError) {
+                return { success: false, error: signUpError.message };
+              }
+
+              // If signup was successful and we got a session, we're good
+              if (signUpData.session) {
+                return { success: true };
+              }
+              
+              // If no session but user was created, try signing in again
+              if (signUpData.user && !signUpData.session) {
+                const { data: retrySignIn, error: retryError } = await supabase.auth.signInWithPassword({
+                  email,
+                  password
+                });
+                
+                if (retryError) {
+                  return { success: false, error: 'Demo account created but sign in failed. Please try again.' };
+                }
+                
+                return { success: true };
+              }
+            } else if (signInError) {
+              return { success: false, error: signInError.message };
+            }
+
+            return { success: true };
+          }
+
+          // Regular login for non-demo accounts
           const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password

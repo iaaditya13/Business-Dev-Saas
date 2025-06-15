@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { AiAssistant } from '@/components/ai/AiAssistant';
-import { Menu, LogOut, Bot } from 'lucide-react';
+import { AppsDrawer } from '@/components/layout/AppsDrawer';
+import { Menu, LogOut, Bot, Grid3x3 } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [showAppsDrawer, setShowAppsDrawer] = useState(false);
   const { user, logout } = useAuthStore();
 
   return (
@@ -32,10 +34,20 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               </SheetContent>
             </Sheet>
             
-            <h1 className="text-xl font-semibold text-foreground">Business Manager</h1>
+            <h1 className="text-xl font-semibold text-foreground">Areion</h1>
           </div>
           
           <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAppsDrawer(!showAppsDrawer)}
+              className="flex items-center space-x-2"
+            >
+              <Grid3x3 className="h-4 w-4" />
+              <span>Apps</span>
+            </Button>
+            
             <Button
               variant="outline"
               size="sm"
@@ -66,6 +78,13 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         <main className="flex-1 p-6 bg-background">
           {children}
         </main>
+
+        {/* Apps Drawer */}
+        {showAppsDrawer && (
+          <div className="w-96 border-l border-border bg-card">
+            <AppsDrawer onClose={() => setShowAppsDrawer(false)} />
+          </div>
+        )}
 
         {/* AI Assistant */}
         {showAiAssistant && (

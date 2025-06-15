@@ -136,11 +136,14 @@ export const AppsGrid = () => {
   const [currentApp, setCurrentApp] = useState<string | null>(null);
 
   const handleAppClick = (appId: string, route: string) => {
+    console.log('App clicked:', appId, 'Route:', route);
     if (appId === 'dashboard') {
       setCurrentApp('dashboard');
     } else if (appId === 'accounting') {
       setCurrentApp('accounting');
     } else {
+      // For other apps that aren't implemented yet
+      console.log('Navigating to:', route);
       window.location.href = route;
     }
   };

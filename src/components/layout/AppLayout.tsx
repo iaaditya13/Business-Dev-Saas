@@ -1,11 +1,12 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import { AiAssistant } from '@/components/ai/AiAssistant';
 import { LogOut, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,14 +14,37 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ full_name?: string; business_name?: string } | null>(null);
   const { user, logout } = useAuthStore();
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('full_name, business_name')
+          .eq('id', user.id)
+          .single();
+        setUserProfile(data);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user]);
+
+  const displayName = userProfile?.full_name || user?.email?.split('@')[0] || 'User';
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold text-foreground">Areion</h1>
+          <div>
+            <h1 className="text-xl font-semibold text-foreground">Areion</h1>
+            {userProfile?.business_name && (
+              <p className="text-sm text-muted-foreground">{userProfile.business_name}</p>
+            )}
+          </div>
           
           <div className="flex items-center space-x-4">
             <Button
@@ -34,7 +58,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             </Button>
             
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <span>Welcome, {user?.name}</span>
+              <span>Welcome, {displayName}</span>
               <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4" />
               </Button>

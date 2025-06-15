@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -13,7 +14,19 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isLoading, initialize } = useAuthStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <AuthLayout />;

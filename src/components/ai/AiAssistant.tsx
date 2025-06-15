@@ -1,7 +1,6 @@
-
 import { useState, useRef, useEffect } from 'react';
-import { useBusinessStore } from '@/stores/businessStore';
-import { geminiService, ChatMessage } from '@/services/geminiService';
+import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
+import { contextAwareGeminiService, ChatMessage } from '@/services/contextAwareGeminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,11 +21,11 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [chats, setChats] = useState<Chat[]>([
     {
       id: '1',
-      title: 'New Chat',
+      title: 'Business Insights',
       messages: [
         {
           role: 'assistant',
-          content: 'Hello! I\'m your AI business assistant. I can help you analyze your business data, answer questions about your finances, sales, inventory, and more. What would you like to know?',
+          content: 'Hello! I\'m your AI business assistant with access to your real-time business data. I can help you analyze your finances, sales, inventory, and provide strategic insights based on your actual business performance. What would you like to know?',
           timestamp: new Date().toISOString()
         }
       ],
@@ -40,8 +39,13 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [editTitle, setEditTitle] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
-  const businessData = useBusinessStore();
+  // Fetch business data when component mounts
+  const { fetchAllData } = useSupabaseBusinessStore();
   const currentChat = chats.find(chat => chat.id === currentChatId);
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -84,7 +88,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       messages: [
         {
           role: 'assistant',
-          content: 'Hello! I\'m your AI business assistant. How can I help you today?',
+          content: 'Hello! I\'m ready to help you with insights about your business. What would you like to know?',
           timestamp: new Date().toISOString()
         }
       ],
@@ -144,9 +148,9 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     setIsLoading(true);
 
     try {
-      const response = await geminiService.generateResponse(
+      const response = await contextAwareGeminiService.generateResponse(
         input.trim(),
-        businessData,
+        null, // Legacy parameter
         currentChat.messages
       );
 
@@ -164,7 +168,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     } catch (error) {
       const errorMessage: ChatMessage = {
         role: 'assistant',
-        content: 'I apologize, but I encountered an error processing your request. Please try again.',
+        content: 'I apologize, but I encountered an error processing your request. Please make sure your Gemini API key is configured correctly and try again.',
         timestamp: new Date().toISOString()
       };
       
@@ -267,7 +271,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
           <div className="flex items-center space-x-2">
             <Bot className="h-5 w-5 text-blue-600" />
-            <h3 className="font-semibold text-foreground">AI Business Assistant</h3>
+            <h3 className="font-semibold text-foreground">Context-Aware AI Assistant</h3>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -333,7 +337,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about your business..."
+              placeholder="Ask about your business data..."
               disabled={isLoading}
               className="flex-1"
             />

@@ -1,16 +1,28 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InvoiceForm } from './InvoiceForm';
 import { InvoiceList } from './InvoiceList';
 import { CustomerList } from './CustomerList';
-import { useBusinessStore } from '@/stores/businessStore';
-import { FileText, Users, Plus } from 'lucide-react';
+import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
+import { FileText } from 'lucide-react';
 
 export const Invoicing = () => {
-  const { invoices } = useBusinessStore();
+  const { invoices, fetchAllData, isLoading } = useSupabaseBusinessStore();
   const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    fetchAllData();
+  }, [fetchAllData]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const totalInvoices = invoices.length;
   const paidInvoices = invoices.filter(inv => inv.status === 'paid').length;

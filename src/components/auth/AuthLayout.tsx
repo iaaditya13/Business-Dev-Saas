@@ -1,23 +1,36 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 export const AuthLayout = () => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ email: '', password: '', name: '' });
+  const [signupData, setSignupData] = useState({ email: '', password: '', fullName: '', businessName: '' });
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const { login, signup } = useAuthStore();
+
+  // Pre-fill demo credentials
+  const fillDemoCredentials = () => {
+    setLoginData({ email: 'demo@yourapp.com', password: 'demo123' });
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setMessage(null);
+    
     try {
-      await login(loginData.email, loginData.password);
+      const result = await login(loginData.email, loginData.password);
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error || 'Login failed' });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -26,21 +39,46 @@ export const AuthLayout = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setMessage(null);
+    
     try {
-      await signup(signupData.email, signupData.password, signupData.name);
+      const result = await signup(
+        signupData.email, 
+        signupData.password, 
+        signupData.fullName,
+        signupData.businessName
+      );
+      
+      if (result.success) {
+        if (result.error) {
+          setMessage({ type: 'success', text: result.error });
+        } else {
+          setMessage({ type: 'success', text: 'Account created successfully!' });
+        }
+      } else {
+        setMessage({ type: 'error', text: result.error || 'Signup failed' });
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Business Manager</CardTitle>
-          <CardDescription>Your complete business management solution</CardDescription>
+          <CardTitle className="text-2xl font-bold">Areion</CardTitle>
+          <CardDescription>Complete Business Management Platform</CardDescription>
         </CardHeader>
         <CardContent>
+          {message && (
+            <Alert className={`mb-4 ${message.type === 'error' ? 'border-red-500' : 'border-green-500'}`}>
+              <AlertDescription className={message.type === 'error' ? 'text-red-700' : 'text-green-700'}>
+                {message.text}
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login">Login</TabsTrigger>
@@ -48,6 +86,18 @@ export const AuthLayout = () => {
             </TabsList>
             
             <TabsContent value="login" className="space-y-4">
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 mb-2">Try the demo account:</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fillDemoCredentials}
+                  className="w-full"
+                >
+                  Use Demo Credentials
+                </Button>
+              </div>
+
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -72,7 +122,14 @@ export const AuthLayout = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Signing in...' : 'Sign In'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    'Sign In'
+                  )}
                 </Button>
               </form>
             </TabsContent>
@@ -80,14 +137,24 @@ export const AuthLayout = () => {
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Name</Label>
+                  <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="Enter your name"
-                    value={signupData.name}
-                    onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
+                    placeholder="Enter your full name"
+                    value={signupData.fullName}
+                    onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-business">Business Name (Optional)</Label>
+                  <Input
+                    id="signup-business"
+                    type="text"
+                    placeholder="Enter your business name"
+                    value={signupData.businessName}
+                    onChange={(e) => setSignupData({ ...signupData, businessName: e.target.value })}
                   />
                 </div>
                 <div className="space-y-2">
@@ -110,10 +177,18 @@ export const AuthLayout = () => {
                     value={signupData.password}
                     onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                     required
+                    minLength={6}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Creating account...' : 'Create Account'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating account...
+                    </>
+                  ) : (
+                    'Create Account'
+                  )}
                 </Button>
               </form>
             </TabsContent>

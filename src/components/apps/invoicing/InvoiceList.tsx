@@ -3,12 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useBusinessStore } from '@/stores/businessStore';
+import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
 import { Eye, Edit, Send, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export const InvoiceList = () => {
-  const { invoices, updateInvoice } = useBusinessStore();
+  const { invoices, updateInvoice } = useSupabaseBusinessStore();
   const { toast } = useToast();
 
   const getStatusColor = (status: string) => {
@@ -20,8 +20,8 @@ export const InvoiceList = () => {
     }
   };
 
-  const handleStatusUpdate = (invoiceId: string, newStatus: 'sent' | 'paid' | 'overdue') => {
-    updateInvoice(invoiceId, { status: newStatus });
+  const handleStatusUpdate = async (invoiceId: string, newStatus: 'sent' | 'paid' | 'overdue') => {
+    await updateInvoice(invoiceId, { status: newStatus });
     toast({
       title: "Invoice updated",
       description: `Invoice status changed to ${newStatus}.`
@@ -56,7 +56,7 @@ export const InvoiceList = () => {
               {invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-mono">#{invoice.id.slice(-6)}</TableCell>
-                  <TableCell>{invoice.customerName}</TableCell>
+                  <TableCell>{invoice.customer_name}</TableCell>
                   <TableCell className="font-medium">${invoice.amount.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(invoice.status)}>
@@ -64,10 +64,10 @@ export const InvoiceList = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {new Date(invoice.dueDate).toLocaleDateString()}
+                    {new Date(invoice.due_date).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    {new Date(invoice.createdAt).toLocaleDateString()}
+                    {new Date(invoice.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2">

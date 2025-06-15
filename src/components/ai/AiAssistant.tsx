@@ -1,39 +1,25 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
-import { contextAwareGeminiService, ChatMessage } from '@/services/contextAwareGeminiService';
+import { useAiChatStore, AiChatMessage } from '@/stores/aiChatStore';
+import { useAuthStore } from '@/stores/authStore';
+import { contextAwareGeminiService } from '@/services/contextAwareGeminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key, Settings } from 'lucide-react';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-
-interface Chat {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-  createdAt: Date;
-}
+import { useToast } from '@/hooks/use-toast';
 
 interface AiAssistantProps {
   onClose: () => void;
 }
 
 export const AiAssistant = ({ onClose }: AiAssistantProps) => {
-  const [chats, setChats] = useState<Chat[]>([
-    {
-      id: '1',
-      title: 'Business Insights',
-      messages: [
-        {
-          role: 'assistant',
-          content: 'Hello! I\'m your AI business assistant with access to your real-time business data. I can help you analyze your finances, sales, inventory, and provide strategic insights based on your actual business performance. What would you like to know?',
-          timestamp: new Date().toISOString()
-        }
-      ],
-      createdAt: new Date()
-    }
-  ]);
-  const [currentChatId, setCurrentChatId] = useState('1');
+  const { chats, fetchChats, createChat, updateChat, deleteChat } = useAiChatStore();
+  const { user } = useAuthStore();
+  const { toast } = useToast();
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
@@ -54,12 +40,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     // Check if API key is available
     const checkApiKey = () => {
       const isAvailable = contextAwareGeminiService.isAvailable();
-      console.log('API Key availability check:', isAvailable);
       setApiKeyMissing(!isAvailable);
     };
     
     checkApiKey();
-  }, [fetchAllData]);
+
+    // Fetch chats if user is authenticated
+    if (user) {
+      fetchChats();
+    }
+  }, [fetchAllData, user, fetchChats]);
+
+  // Set initial chat when chats are loaded
+  useEffect(() => {
+    if (chats.length > 0 && !currentChatId) {
+      setCurrentChatId(chats[0].id);
+    }
+  }, [chats, currentChatId]);
 
   useEffect(() => {
     // Scroll to bottom when messages change with a slight delay to ensure DOM is updated
@@ -76,7 +73,6 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       setApiKeyMissing(false);
       setShowApiKeyInput(false);
       setTempApiKey('');
-      console.log('API key set successfully');
     }
   };
 
@@ -106,42 +102,67 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     return title.length > 30 ? title.slice(0, 27) + '...' : title;
   };
 
-  const createNewChat = () => {
-    const newChat: Chat = {
-      id: Date.now().toString(),
-      title: 'New Chat',
-      messages: [
-        {
-          role: 'assistant',
-          content: 'Hello! I\'m ready to help you with insights about your business. What would you like to know?',
-          timestamp: new Date().toISOString()
-        }
-      ],
-      createdAt: new Date()
-    };
-    setChats(prev => [newChat, ...prev]);
-    setCurrentChatId(newChat.id);
-  };
+  const createNewChat = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create a new chat.",
+        variant: "destructive"
+      });
+      return;
+    }
 
-  const deleteChat = (chatId: string) => {
-    if (chats.length === 1) return;
-    
-    setChats(prev => prev.filter(chat => chat.id !== chatId));
-    if (currentChatId === chatId) {
-      const remainingChats = chats.filter(chat => chat.id !== chatId);
-      setCurrentChatId(remainingChats[0]?.id || '');
+    try {
+      const assistantMessage: AiChatMessage = {
+        role: 'assistant',
+        content: 'Hello! I\'m ready to help you with insights about your business. What would you like to know?',
+        timestamp: new Date().toISOString()
+      };
+
+      const chatId = await createChat('New Chat', assistantMessage);
+      setCurrentChatId(chatId);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create new chat.",
+        variant: "destructive"
+      });
     }
   };
 
-  const updateChatTitle = (chatId: string, newTitle: string) => {
-    setChats(prev => prev.map(chat => 
-      chat.id === chatId ? { ...chat, title: newTitle } : chat
-    ));
-    setEditingChatId(null);
+  const deleteChatHandler = async (chatId: string) => {
+    if (chats.length === 1) return;
+    
+    try {
+      await deleteChat(chatId);
+      if (currentChatId === chatId) {
+        const remainingChats = chats.filter(chat => chat.id !== chatId);
+        setCurrentChatId(remainingChats[0]?.id || null);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete chat.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const updateChatTitle = async (chatId: string, newTitle: string) => {
+    try {
+      await updateChat(chatId, { title: newTitle });
+      setEditingChatId(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update chat title.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !currentChat) return;
+    if (!input.trim() || isLoading || !user) return;
 
     // Check API key availability before sending
     if (!contextAwareGeminiService.isAvailable()) {
@@ -149,65 +170,76 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       return;
     }
 
-    const userMessage: ChatMessage = {
+    // If no current chat, create one
+    if (!currentChatId) {
+      try {
+        const title = generateChatTitle(input.trim());
+        const chatId = await createChat(title);
+        setCurrentChatId(chatId);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to create chat.",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    const userMessage: AiChatMessage = {
       role: 'user',
       content: input.trim(),
       timestamp: new Date().toISOString()
     };
 
-    const isFirstUserMessage = currentChat.messages.filter(msg => msg.role === 'user').length === 0;
-
-    setChats(prev => prev.map(chat => 
-      chat.id === currentChatId 
-        ? { ...chat, messages: [...chat.messages, userMessage] }
-        : chat
-    ));
-
-    if (isFirstUserMessage && currentChat.title === 'New Chat') {
-      const newTitle = generateChatTitle(input.trim());
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId 
-          ? { ...chat, title: newTitle }
-          : chat
-      ));
-    }
-
-    setInput('');
-    setIsLoading(true);
+    const isFirstUserMessage = currentChat?.messages.filter(msg => msg.role === 'user').length === 0;
 
     try {
+      // Update chat with user message
+      const updatedMessages = [...(currentChat?.messages || []), userMessage];
+      await updateChat(currentChatId!, { messages: updatedMessages });
+
+      // Update title if it's the first user message and title is "New Chat"
+      if (isFirstUserMessage && currentChat?.title === 'New Chat') {
+        const newTitle = generateChatTitle(input.trim());
+        await updateChat(currentChatId!, { title: newTitle });
+      }
+
+      setInput('');
+      setIsLoading(true);
+
+      // Generate AI response
       const response = await contextAwareGeminiService.generateResponse(
         input.trim(),
         null,
-        currentChat.messages
+        updatedMessages
       );
 
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: AiChatMessage = {
         role: 'assistant',
         content: response,
         timestamp: new Date().toISOString()
       };
 
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId 
-          ? { ...chat, messages: [...chat.messages, assistantMessage] }
-          : chat
-      ));
+      // Update chat with assistant message
+      const finalMessages = [...updatedMessages, assistantMessage];
+      await updateChat(currentChatId!, { messages: finalMessages });
+
     } catch (error) {
       console.error('Error generating response:', error);
-      const errorMessage: ChatMessage = {
+      const errorMessage: AiChatMessage = {
         role: 'assistant',
         content: 'I apologize, but I encountered an error processing your request. Please make sure your Gemini API key is configured correctly and try again.',
         timestamp: new Date().toISOString()
       };
       
-      setChats(prev => prev.map(chat => 
-        chat.id === currentChatId 
-          ? { ...chat, messages: [...chat.messages, errorMessage] }
-          : chat
-      ));
+      try {
+        const errorMessages = [...(currentChat?.messages || []), userMessage, errorMessage];
+        await updateChat(currentChatId!, { messages: errorMessages });
+      } catch (updateError) {
+        console.error('Error saving error message:', updateError);
+      }
       
-      // Show API key input if there's an error
       setApiKeyMissing(true);
     } finally {
       setIsLoading(false);
@@ -220,6 +252,17 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       handleSendMessage();
     }
   };
+
+  if (!user) {
+    return (
+      <div className="flex h-full max-h-[80vh] items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+          <p className="text-muted-foreground">Please log in to use the AI Assistant.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full max-h-[80vh]">
@@ -294,7 +337,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
                       className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteChat(chat.id);
+                        deleteChatHandler(chat.id);
                       }}
                     >
                       <Trash2 className="h-3 w-3" />

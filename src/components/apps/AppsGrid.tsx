@@ -9,7 +9,7 @@ export const AppsGrid = () => {
 
   const handleAppClick = (appId: string, route: string) => {
     console.log('App clicked:', appId, 'Route:', route);
-    if (['dashboard', 'accounting', 'invoicing', 'crm', 'inventory'].includes(appId)) {
+    if (['dashboard', 'accounting', 'invoicing', 'crm', 'inventory', 'pos-shop'].includes(appId)) {
       setCurrentApp(appId);
     } else {
       // For other apps that aren't implemented yet

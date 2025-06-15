@@ -6,6 +6,7 @@ import { Accounting } from './accounting/Accounting';
 import { Invoicing } from './invoicing/Invoicing';
 import { CRM } from './crm/CRM';
 import { Inventory } from './inventory/Inventory';
+import { POSShop } from './pos/POSShop';
 
 interface AppViewRendererProps {
   currentApp: string;
@@ -25,6 +26,8 @@ export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererPro
         return <CRM />;
       case 'inventory':
         return <Inventory />;
+      case 'pos-shop':
+        return <POSShop />;
       default:
         return null;
     }

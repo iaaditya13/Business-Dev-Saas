@@ -12,6 +12,7 @@ import { Settings } from './settings/Settings';
 import { Calendar } from './calendar/Calendar';
 import { Messaging } from './messaging/Messaging';
 import { Security } from './security/Security';
+import { Reports } from './reports/Reports';
 
 interface AppViewRendererProps {
   currentApp: string;
@@ -43,6 +44,8 @@ export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererPro
         return <Messaging />;
       case 'security':
         return <Security />;
+      case 'reports':
+        return <Reports />;
       default:
         return null;
     }

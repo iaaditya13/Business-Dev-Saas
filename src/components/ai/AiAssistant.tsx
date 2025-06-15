@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
 import { useAiChatStore, AiChatMessage } from '@/stores/aiChatStore';
@@ -393,7 +392,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         )}
 
-        <ScrollArea className="flex-1 min-h-0">
+        <ScrollArea className="flex-1 min-h-0" style={{ overflow: 'auto' }}>
           <div className="p-4 space-y-4">
             {currentChat?.messages.map((message, index) => (
               <div

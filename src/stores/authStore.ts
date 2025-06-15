@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/integrations/supabase/client';
@@ -64,32 +65,24 @@ export const useAuthStore = create<AuthStore>()(
 
       login: async (email: string, password: string) => {
         try {
-          // Check if this is the demo account and handle specially
-          if (email === 'demo@yourapp.com') {
-            // First try to sign in
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-              email,
-              password
-            });
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
 
-            // If sign in succeeds, we're done
-            if (signInData.session && !signInError) {
-              return { success: true };
-            }
-
-            // If sign in fails because user doesn't exist, create the demo account
-            if (signInError && signInError.message.includes('Invalid login credentials')) {
-              console.log('Demo account not found, creating it...');
+          if (error) {
+            // If user doesn't exist, automatically create account
+            if (error.message.includes('Invalid login credentials')) {
+              console.log('User not found, creating account automatically...');
               
-              // Create the demo account without email confirmation
               const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                   emailRedirectTo: `${window.location.origin}/`,
                   data: {
-                    full_name: 'Demo User',
-                    business_name: 'Demo Business'
+                    full_name: email.split('@')[0], // Use email prefix as default name
+                    business_name: ''
                   }
                 }
               });
@@ -98,9 +91,8 @@ export const useAuthStore = create<AuthStore>()(
                 return { success: false, error: signUpError.message };
               }
 
-              // For demo account, we need to handle the case where email confirmation is required
               // Try to sign in immediately after signup
-              if (signUpData.user && !signUpData.session) {
+              if (signUpData.user) {
                 // Wait a moment for the user to be created
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
@@ -110,14 +102,10 @@ export const useAuthStore = create<AuthStore>()(
                 });
                 
                 if (retryError) {
-                  // If still can't sign in due to email confirmation, return helpful message
-                  if (retryError.message.includes('Email not confirmed')) {
-                    return { 
-                      success: false, 
-                      error: 'Demo account created but requires email confirmation. Please check the Supabase Auth settings to disable email confirmation for easier testing, or use your own account instead.' 
-                    };
-                  }
-                  return { success: false, error: retryError.message };
+                  return { 
+                    success: false, 
+                    error: 'Account created successfully! Please try signing in again.' 
+                  };
                 }
                 
                 return { success: true };
@@ -126,29 +114,6 @@ export const useAuthStore = create<AuthStore>()(
               return { success: true };
             }
 
-            // Handle email not confirmed error specifically
-            if (signInError && signInError.message.includes('Email not confirmed')) {
-              return { 
-                success: false, 
-                error: 'Demo account requires email confirmation. Please check the Supabase Auth settings to disable email confirmation for easier testing, or use your own account instead.' 
-              };
-            }
-
-            // Other sign in errors
-            if (signInError) {
-              return { success: false, error: signInError.message };
-            }
-
-            return { success: true };
-          }
-
-          // Regular login for non-demo accounts
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
-          if (error) {
             return { success: false, error: error.message };
           }
 
@@ -176,11 +141,21 @@ export const useAuthStore = create<AuthStore>()(
             return { success: false, error: error.message };
           }
 
+          // Try to sign in immediately after signup
           if (data.user && !data.session) {
-            return { 
-              success: true, 
-              error: 'Please check your email to confirm your account before signing in.' 
-            };
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+              email,
+              password
+            });
+            
+            if (signInError) {
+              return { 
+                success: true, 
+                error: 'Account created successfully! Please try signing in.' 
+              };
+            }
           }
 
           return { success: true };

@@ -5,7 +5,7 @@ import { geminiService, ChatMessage } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User } from 'lucide-react';
+import { X, Send, Bot, User, Home } from 'lucide-react';
 
 interface AiAssistantProps {
   onClose: () => void;
@@ -77,16 +77,27 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     }
   };
 
+  const handleReturnHome = () => {
+    window.location.href = '/';
+    onClose();
+  };
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-2">
           <Bot className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-gray-900">AI Business Assistant</h3>
+          <h3 className="font-semibold text-foreground">AI Business Assistant</h3>
         </div>
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" size="sm" onClick={handleReturnHome}>
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
@@ -108,7 +119,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                   message.role === 'user'
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    : 'bg-muted text-foreground'
                 }`}
               >
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -118,8 +129,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
               </div>
 
               {message.role === 'user' && (
-                <div className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-gray-600" />
+                <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-muted-foreground" />
                 </div>
               )}
             </div>
@@ -130,11 +141,11 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
               <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <Bot className="h-4 w-4 text-blue-600" />
               </div>
-              <div className="bg-gray-100 rounded-lg px-4 py-2">
+              <div className="bg-muted rounded-lg px-4 py-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </div>
@@ -142,7 +153,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
           <Input
             value={input}
@@ -150,6 +161,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
             onKeyPress={handleKeyPress}
             placeholder="Ask about your business..."
             disabled={isLoading}
+            className="flex-1"
           />
           <Button onClick={handleSendMessage} disabled={isLoading || !input.trim()}>
             <Send className="h-4 w-4" />

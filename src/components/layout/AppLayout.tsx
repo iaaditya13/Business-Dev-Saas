@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { AiAssistant } from '@/components/ai/AiAssistant';
 import { LogOut, Bot } from 'lucide-react';
 
@@ -24,7 +25,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowAiAssistant(!showAiAssistant)}
+              onClick={() => setShowAiAssistant(true)}
               className="flex items-center space-x-2"
             >
               <Bot className="h-4 w-4" />
@@ -41,19 +42,17 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
         </div>
       </header>
 
-      <div className="flex">
-        {/* Main Content */}
-        <main className="flex-1">
-          {children}
-        </main>
+      {/* Main Content */}
+      <main className="w-full">
+        {children}
+      </main>
 
-        {/* AI Assistant */}
-        {showAiAssistant && (
-          <div className="w-96 border-l border-border bg-card">
-            <AiAssistant onClose={() => setShowAiAssistant(false)} />
-          </div>
-        )}
-      </div>
+      {/* AI Assistant Dialog */}
+      <Dialog open={showAiAssistant} onOpenChange={setShowAiAssistant}>
+        <DialogContent className="max-w-4xl h-[80vh] p-0">
+          <AiAssistant onClose={() => setShowAiAssistant(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

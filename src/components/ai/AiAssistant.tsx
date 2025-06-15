@@ -5,34 +5,86 @@ import { geminiService, ChatMessage } from '@/services/geminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Home } from 'lucide-react';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2 } from 'lucide-react';
+
+interface Chat {
+  id: string;
+  title: string;
+  messages: ChatMessage[];
+  createdAt: Date;
+}
 
 interface AiAssistantProps {
   onClose: () => void;
 }
 
 export const AiAssistant = ({ onClose }: AiAssistantProps) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [chats, setChats] = useState<Chat[]>([
     {
-      role: 'assistant',
-      content: 'Hello! I\'m your AI business assistant. I can help you analyze your business data, answer questions about your finances, sales, inventory, and more. What would you like to know?',
-      timestamp: new Date().toISOString()
+      id: '1',
+      title: 'New Chat',
+      messages: [
+        {
+          role: 'assistant',
+          content: 'Hello! I\'m your AI business assistant. I can help you analyze your business data, answer questions about your finances, sales, inventory, and more. What would you like to know?',
+          timestamp: new Date().toISOString()
+        }
+      ],
+      createdAt: new Date()
     }
   ]);
+  const [currentChatId, setCurrentChatId] = useState('1');
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   const businessData = useBusinessStore();
+  const currentChat = chats.find(chat => chat.id === currentChatId);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [currentChat?.messages]);
+
+  const createNewChat = () => {
+    const newChat: Chat = {
+      id: Date.now().toString(),
+      title: 'New Chat',
+      messages: [
+        {
+          role: 'assistant',
+          content: 'Hello! I\'m your AI business assistant. How can I help you today?',
+          timestamp: new Date().toISOString()
+        }
+      ],
+      createdAt: new Date()
+    };
+    setChats(prev => [newChat, ...prev]);
+    setCurrentChatId(newChat.id);
+  };
+
+  const deleteChat = (chatId: string) => {
+    if (chats.length === 1) return; // Don't delete the last chat
+    
+    setChats(prev => prev.filter(chat => chat.id !== chatId));
+    if (currentChatId === chatId) {
+      const remainingChats = chats.filter(chat => chat.id !== chatId);
+      setCurrentChatId(remainingChats[0]?.id || '');
+    }
+  };
+
+  const updateChatTitle = (chatId: string, newTitle: string) => {
+    setChats(prev => prev.map(chat => 
+      chat.id === chatId ? { ...chat, title: newTitle } : chat
+    ));
+    setEditingChatId(null);
+  };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || !currentChat) return;
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -40,7 +92,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       timestamp: new Date().toISOString()
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Update current chat with user message
+    setChats(prev => prev.map(chat => 
+      chat.id === currentChatId 
+        ? { ...chat, messages: [...chat.messages, userMessage] }
+        : chat
+    ));
+
+    // Update chat title if it's still "New Chat"
+    if (currentChat.title === 'New Chat') {
+      const newTitle = input.trim().slice(0, 30) + (input.trim().length > 30 ? '...' : '');
+      setChats(prev => prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, title: newTitle }
+          : chat
+      ));
+    }
+
     setInput('');
     setIsLoading(true);
 
@@ -48,7 +116,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       const response = await geminiService.generateResponse(
         input.trim(),
         businessData,
-        messages
+        currentChat.messages
       );
 
       const assistantMessage: ChatMessage = {
@@ -57,14 +125,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         timestamp: new Date().toISOString()
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setChats(prev => prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, messages: [...chat.messages, assistantMessage] }
+          : chat
+      ));
     } catch (error) {
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: 'I apologize, but I encountered an error processing your request. Please try again.',
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, errorMessage]);
+      
+      setChats(prev => prev.map(chat => 
+        chat.id === currentChatId 
+          ? { ...chat, messages: [...chat.messages, errorMessage] }
+          : chat
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -77,95 +154,162 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     }
   };
 
-  const handleReturnHome = () => {
-    window.location.href = '/';
-    onClose();
-  };
-
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <div className="flex items-center space-x-2">
-          <Bot className="h-5 w-5 text-blue-600" />
-          <h3 className="font-semibold text-foreground">AI Business Assistant</h3>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" size="sm" onClick={handleReturnHome}>
-            <Home className="h-4 w-4 mr-2" />
-            Home
+    <div className="flex h-full">
+      {/* Chat History Sidebar */}
+      <div className="w-64 border-r border-border bg-muted/30 flex flex-col">
+        <div className="p-3 border-b border-border">
+          <Button 
+            onClick={createNewChat}
+            className="w-full justify-start"
+            size="sm"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            New Chat
           </Button>
+        </div>
+        
+        <ScrollArea className="flex-1">
+          <div className="p-2 space-y-1">
+            {chats.map(chat => (
+              <div
+                key={chat.id}
+                className={`group relative flex items-center space-x-2 p-2 rounded-lg cursor-pointer hover:bg-muted transition-colors ${
+                  currentChatId === chat.id ? 'bg-muted' : ''
+                }`}
+                onClick={() => setCurrentChatId(chat.id)}
+              >
+                <MessageSquare className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                
+                {editingChatId === chat.id ? (
+                  <Input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        updateChatTitle(chat.id, editTitle || chat.title);
+                      }
+                    }}
+                    className="h-6 text-xs"
+                    autoFocus
+                  />
+                ) : (
+                  <span className="text-sm truncate flex-1">{chat.title}</span>
+                )}
+                
+                <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingChatId(chat.id);
+                      setEditTitle(chat.title);
+                    }}
+                  >
+                    <Edit3 className="h-3 w-3" />
+                  </Button>
+                  {chats.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChat(chat.id);
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center space-x-2">
+            <Bot className="h-5 w-5 text-blue-600" />
+            <h3 className="font-semibold text-foreground">AI Business Assistant</h3>
+          </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
-      </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-        <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={`flex items-start space-x-3 ${
-                message.role === 'user' ? 'justify-end' : 'justify-start'
-              }`}
-            >
-              {message.role === 'assistant' && (
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+          <div className="space-y-4">
+            {currentChat?.messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex items-start space-x-3 ${
+                  message.role === 'user' ? 'justify-end' : 'justify-start'
+                }`}
+              >
+                {message.role === 'assistant' && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Bot className="h-4 w-4 text-blue-600" />
+                  </div>
+                )}
+                
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.role === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-muted text-foreground'
+                  }`}
+                >
+                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-xs mt-1 opacity-70">
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                  </p>
+                </div>
+
+                {message.role === 'user' && (
+                  <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <Bot className="h-4 w-4 text-blue-600" />
                 </div>
-              )}
-              
-              <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-muted text-foreground'
-                }`}
-              >
-                <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                <p className="text-xs mt-1 opacity-70">
-                  {new Date(message.timestamp).toLocaleTimeString()}
-                </p>
-              </div>
-
-              {message.role === 'user' && (
-                <div className="flex-shrink-0 w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-          ))}
-          
-          {isLoading && (
-            <div className="flex items-start space-x-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <Bot className="h-4 w-4 text-blue-600" />
-              </div>
-              <div className="bg-muted rounded-lg px-4 py-2">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="bg-muted rounded-lg px-4 py-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      </ScrollArea>
+            )}
+          </div>
+        </ScrollArea>
 
-      <div className="p-4 border-t border-border">
-        <div className="flex space-x-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask about your business..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={handleSendMessage} disabled={isLoading || !input.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
+        <div className="p-4 border-t border-border">
+          <div className="flex space-x-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask about your business..."
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button onClick={handleSendMessage} disabled={isLoading || !input.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -50,8 +50,14 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
 
       if (error) throw error;
 
+      // Convert the data to proper AiChat format
+      const transformedChats: AiChat[] = (data || []).map(chat => ({
+        ...chat,
+        messages: Array.isArray(chat.messages) ? chat.messages as AiChatMessage[] : []
+      }));
+
       set({
-        chats: data || [],
+        chats: transformedChats,
         isLoading: false
       });
     } catch (error) {
@@ -72,15 +78,21 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
         .insert([{
           user_id: user.id,
           title,
-          messages
+          messages: messages as any // Cast to Json type for Supabase
         }])
         .select()
         .single();
 
       if (error) throw error;
 
+      // Transform the returned data to proper AiChat format
+      const newChat: AiChat = {
+        ...data,
+        messages: Array.isArray(data.messages) ? data.messages as AiChatMessage[] : []
+      };
+
       set(state => ({
-        chats: [data, ...state.chats]
+        chats: [newChat, ...state.chats]
       }));
 
       return data.id;
@@ -93,18 +105,29 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
 
   updateChat: async (id: string, updates: Partial<Pick<AiChat, 'title' | 'messages'>>) => {
     try {
+      // Cast messages to Json type for Supabase if present
+      const supabaseUpdates = updates.messages 
+        ? { ...updates, messages: updates.messages as any }
+        : updates;
+
       const { data, error } = await supabase
         .from('ai_chats')
-        .update(updates)
+        .update(supabaseUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
 
+      // Transform the returned data to proper AiChat format
+      const updatedChat: AiChat = {
+        ...data,
+        messages: Array.isArray(data.messages) ? data.messages as AiChatMessage[] : []
+      };
+
       set(state => ({
         chats: state.chats.map(chat => 
-          chat.id === id ? { ...chat, ...data } : chat
+          chat.id === id ? updatedChat : chat
         )
       }));
     } catch (error) {

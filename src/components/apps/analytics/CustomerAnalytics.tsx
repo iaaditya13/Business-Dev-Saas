@@ -25,7 +25,7 @@ export const CustomerAnalytics = () => {
 
   // Calculate customer value
   const customerValue = () => {
-    const customers = {};
+    const customers: Record<string, { name: string; revenue: number; invoices: number }> = {};
     
     invoices.forEach(invoice => {
       if (invoice.status === 'paid') {
@@ -42,13 +42,13 @@ export const CustomerAnalytics = () => {
     });
 
     return Object.values(customers)
-      .sort((a: any, b: any) => b.revenue - a.revenue)
+      .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
   };
 
   // Calculate lead conversion by status
   const leadStatusData = () => {
-    const statuses = {};
+    const statuses: Record<string, { name: string; value: number }> = {};
     leads.forEach(lead => {
       if (!statuses[lead.status]) {
         statuses[lead.status] = { name: lead.status, value: 0 };
@@ -60,7 +60,7 @@ export const CustomerAnalytics = () => {
 
   // Calculate monthly customer acquisition
   const monthlyCustomers = () => {
-    const months = {};
+    const months: Record<string, { month: string; customers: number; leads: number }> = {};
     
     // Track new customers from invoices
     const seenCustomers = new Set();
@@ -86,15 +86,16 @@ export const CustomerAnalytics = () => {
       months[month].leads += 1;
     });
 
-    return Object.values(months).sort((a: any, b: any) => new Date(a.month).getTime() - new Date(b.month).getTime());
+    return Object.values(months).sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime());
   };
 
   const totalCustomers = new Set(invoices.map(inv => inv.customerId)).size;
   const totalLeads = leads.length;
   const wonLeads = leads.filter(lead => lead.status === 'won').length;
-  const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : 0;
-  const averageCustomerValue = customerValue().length > 0 ? 
-    customerValue().reduce((sum: number, customer: any) => sum + customer.revenue, 0) / customerValue().length : 0;
+  const conversionRate = totalLeads > 0 ? ((wonLeads / totalLeads) * 100).toFixed(1) : '0';
+  const customerValues = customerValue();
+  const averageCustomerValue = customerValues.length > 0 ? 
+    customerValues.reduce((sum, customer) => sum + customer.revenue, 0) / customerValues.length : 0;
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -178,7 +179,7 @@ export const CustomerAnalytics = () => {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
-              <BarChart data={customerValue()}>
+              <BarChart data={customerValues}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
@@ -219,7 +220,7 @@ export const CustomerAnalytics = () => {
       </div>
 
       {/* Customer Details */}
-      {customerValue().length > 0 && (
+      {customerValues.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Customer Value Breakdown</CardTitle>
@@ -227,7 +228,7 @@ export const CustomerAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {customerValue().map((customer: any, index) => (
+              {customerValues.map((customer, index) => (
                 <div key={index} className="flex items-center justify-between p-3 border rounded">
                   <div>
                     <p className="font-medium">{customer.name}</p>

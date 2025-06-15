@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const API_KEY = 'AIzaSyAYgUo2NwMHpxzUDgHB2d7kN-cwe9mlO7o';
@@ -35,8 +34,6 @@ Business Context:
 
 Recent Activity:
 ${this.getRecentActivity(businessContext)}
-
-You are an AI business assistant helping with this business management platform. Answer questions about the business data, provide insights, and suggest actions based on the current state of the business.
 `;
       }
 
@@ -53,7 +50,36 @@ ${conversationContext}
 
 Current question: ${message}
 
-Please provide a helpful response as a business assistant.`;
+RESPONSE GUIDELINES:
+🎯 Be PRECISE and DIRECT in your answers
+📝 Use various writing techniques:
+  - Bullet points for clarity
+  - **Bold text** for emphasis
+  - *Italics* for nuance
+  - Numbered lists for steps
+  - Emojis to enhance communication and add personality
+  - Short paragraphs for readability
+  - Questions to engage the user
+
+💼 As a business assistant, provide:
+  - Actionable insights with specific numbers
+  - Clear recommendations with reasoning
+  - Visual formatting for easy scanning
+  - Contextual emojis that match the business topic
+
+🚀 Keep responses:
+  - Concise but comprehensive
+  - Professional yet friendly
+  - Visually organized
+  - Easy to understand at a glance
+
+Example format:
+📊 **Financial Summary**
+• Revenue: $X (📈 +Y% from last month)
+• Outstanding: $Z invoices pending
+• 🎯 Recommendation: Focus on collecting overdue payments
+
+Please provide a helpful, well-formatted response as a business assistant.`;
 
       const result = await this.model.generateContent(fullPrompt);
       const response = await result.response;

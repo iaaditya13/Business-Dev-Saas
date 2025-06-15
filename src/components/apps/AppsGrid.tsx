@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { Accounting } from './accounting/Accounting';
+import { Invoicing } from './invoicing/Invoicing';
 import { 
   LayoutDashboard, 
   Calculator, 

@@ -4,7 +4,7 @@ import { contextAwareGeminiService, ChatMessage } from '@/services/contextAwareG
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key } from 'lucide-react';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key, Settings } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Chat {
@@ -51,8 +51,13 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     fetchAllData();
     
     // Check if API key is available
-    const isAvailable = contextAwareGeminiService.isAvailable();
-    setApiKeyMissing(!isAvailable);
+    const checkApiKey = () => {
+      const isAvailable = contextAwareGeminiService.isAvailable();
+      console.log('API Key availability check:', isAvailable);
+      setApiKeyMissing(!isAvailable);
+    };
+    
+    checkApiKey();
   }, [fetchAllData]);
 
   useEffect(() => {
@@ -70,7 +75,13 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       setApiKeyMissing(false);
       setShowApiKeyInput(false);
       setTempApiKey('');
+      console.log('API key set successfully');
     }
+  };
+
+  const handleShowApiKeyInput = () => {
+    setShowApiKeyInput(true);
+    setTempApiKey('');
   };
 
   const generateChatTitle = (message: string): string => {
@@ -129,7 +140,13 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !currentChat || apiKeyMissing) return;
+    if (!input.trim() || isLoading || !currentChat) return;
+
+    // Check API key availability before sending
+    if (!contextAwareGeminiService.isAvailable()) {
+      setApiKeyMissing(true);
+      return;
+    }
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -176,6 +193,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           : chat
       ));
     } catch (error) {
+      console.error('Error generating response:', error);
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: 'I apologize, but I encountered an error processing your request. Please make sure your Gemini API key is configured correctly and try again.',
@@ -187,6 +205,9 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           ? { ...chat, messages: [...chat.messages, errorMessage] }
           : chat
       ));
+      
+      // Show API key input if there's an error
+      setApiKeyMissing(true);
     } finally {
       setIsLoading(false);
     }
@@ -206,11 +227,20 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         <div className="p-3 border-b border-border">
           <Button 
             onClick={createNewChat}
-            className="w-full justify-start"
+            className="w-full justify-start mb-2"
             size="sm"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Chat
+          </Button>
+          <Button 
+            onClick={handleShowApiKeyInput}
+            variant="outline"
+            className="w-full justify-start"
+            size="sm"
+          >
+            <Key className="h-4 w-4 mr-2" />
+            API Key
           </Button>
         </div>
         
@@ -288,33 +318,34 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </Button>
         </div>
 
-        {apiKeyMissing && (
-          <div className="p-4 space-y-4">
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                AI Assistant requires a Gemini API key to function. You can enter it below or set it as an environment variable.
-              </AlertDescription>
-            </Alert>
-            
-            {!showApiKeyInput ? (
-              <Button onClick={() => setShowApiKeyInput(true)} className="w-full">
-                <Key className="h-4 w-4 mr-2" />
-                Enter API Key
-              </Button>
-            ) : (
-              <div className="flex space-x-2">
-                <Input
-                  type="password"
-                  placeholder="Enter your Gemini API key"
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={handleSetApiKey}>Save</Button>
-                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>Cancel</Button>
-              </div>
+        {(apiKeyMissing || showApiKeyInput) && (
+          <div className="p-4 space-y-4 border-b border-border">
+            {apiKeyMissing && (
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  AI Assistant requires a Gemini API key to function. Please enter your API key below.
+                </AlertDescription>
+              </Alert>
             )}
+            
+            <div className="flex space-x-2">
+              <Input
+                type="password"
+                placeholder="Enter your Gemini API key (AIzaSy...)"
+                value={tempApiKey}
+                onChange={(e) => setTempApiKey(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleSetApiKey} disabled={!tempApiKey.trim()}>
+                Save
+              </Button>
+              {!apiKeyMissing && (
+                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>
+                  Cancel
+                </Button>
+              )}
+            </div>
           </div>
         )}
 

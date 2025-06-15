@@ -42,6 +42,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [tempApiKey, setTempApiKey] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch business data when component mounts
   const { fetchAllData } = useSupabaseBusinessStore();
@@ -61,12 +62,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   }, [fetchAllData]);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
+    // Scroll to bottom when messages change
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentChat?.messages]);
 
   const handleSetApiKey = () => {
@@ -349,7 +346,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         )}
 
-        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1 min-h-0">
           <div className="p-4 space-y-4">
             {currentChat?.messages.map((message, index) => (
               <div
@@ -399,6 +396,9 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
                 </div>
               </div>
             )}
+            
+            {/* Invisible div to scroll to */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 

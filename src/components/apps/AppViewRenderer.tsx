@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Dashboard } from '@/components/dashboard/Dashboard';
@@ -10,6 +11,7 @@ import { Analytics } from './analytics/Analytics';
 import { Settings } from './settings/Settings';
 import { Calendar } from './calendar/Calendar';
 import { Messaging } from './messaging/Messaging';
+import { Security } from './security/Security';
 
 interface AppViewRendererProps {
   currentApp: string;
@@ -39,6 +41,8 @@ export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererPro
         return <Calendar />;
       case 'messaging':
         return <Messaging />;
+      case 'security':
+        return <Security />;
       default:
         return null;
     }

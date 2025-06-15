@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useBusinessStore } from '@/stores/businessStore';
 import { geminiService, ChatMessage } from '@/services/geminiService';
@@ -45,7 +44,10 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [currentChat?.messages]);
 
@@ -155,7 +157,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   };
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full max-h-[80vh]">
       {/* Chat History Sidebar */}
       <div className="w-64 border-r border-border bg-muted/30 flex flex-col">
         <div className="p-3 border-b border-border">
@@ -232,8 +234,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
           <div className="flex items-center space-x-2">
             <Bot className="h-5 w-5 text-blue-600" />
             <h3 className="font-semibold text-foreground">AI Business Assistant</h3>
@@ -243,8 +245,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </Button>
         </div>
 
-        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
+          <div className="p-4 space-y-4">
             {currentChat?.messages.map((message, index) => (
               <div
                 key={index}
@@ -259,13 +261,13 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
                 )}
                 
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  className={`max-w-[70%] px-4 py-2 rounded-lg break-words ${
                     message.role === 'user'
                       ? 'bg-blue-600 text-white'
                       : 'bg-muted text-foreground'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
                   <p className="text-xs mt-1 opacity-70">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </p>
@@ -296,7 +298,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         </ScrollArea>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border flex-shrink-0">
           <div className="flex space-x-2">
             <Input
               value={input}

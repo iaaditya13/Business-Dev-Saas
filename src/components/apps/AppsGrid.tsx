@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -142,6 +141,8 @@ export const AppsGrid = () => {
       setCurrentApp('dashboard');
     } else if (appId === 'accounting') {
       setCurrentApp('accounting');
+    } else if (appId === 'invoicing') {
+      setCurrentApp('invoicing');
     } else {
       // For other apps that aren't implemented yet
       console.log('Navigating to:', route);
@@ -188,6 +189,26 @@ export const AppsGrid = () => {
             </Button>
           </div>
           <Accounting />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentApp === 'invoicing') {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={handleBackToApps}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Apps</span>
+            </Button>
+          </div>
+          <Invoicing />
         </div>
       </div>
     );

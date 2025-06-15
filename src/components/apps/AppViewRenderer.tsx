@@ -9,6 +9,7 @@ import { Inventory } from './inventory/Inventory';
 import { POSShop } from './pos/POSShop';
 import { Analytics } from './analytics/Analytics';
 import { Settings } from './settings/Settings';
+import { Calendar } from './calendar/Calendar';
 
 interface AppViewRendererProps {
   currentApp: string;
@@ -34,6 +35,8 @@ export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererPro
         return <Analytics />;
       case 'settings':
         return <Settings />;
+      case 'calendar':
+        return <Calendar />;
       default:
         return null;
     }

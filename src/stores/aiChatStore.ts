@@ -53,7 +53,7 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
       // Convert the data to proper AiChat format
       const transformedChats: AiChat[] = (data || []).map(chat => ({
         ...chat,
-        messages: Array.isArray(chat.messages) ? chat.messages as AiChatMessage[] : []
+        messages: Array.isArray(chat.messages) ? chat.messages as unknown as AiChatMessage[] : []
       }));
 
       set({
@@ -88,7 +88,7 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
       // Transform the returned data to proper AiChat format
       const newChat: AiChat = {
         ...data,
-        messages: Array.isArray(data.messages) ? data.messages as AiChatMessage[] : []
+        messages: Array.isArray(data.messages) ? data.messages as unknown as AiChatMessage[] : []
       };
 
       set(state => ({
@@ -122,7 +122,7 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
       // Transform the returned data to proper AiChat format
       const updatedChat: AiChat = {
         ...data,
-        messages: Array.isArray(data.messages) ? data.messages as AiChatMessage[] : []
+        messages: Array.isArray(data.messages) ? data.messages as unknown as AiChatMessage[] : []
       };
 
       set(state => ({

@@ -7,6 +7,7 @@ import { Dashboard } from '@/components/dashboard/Dashboard';
 import { Accounting } from './accounting/Accounting';
 import { Invoicing } from './invoicing/Invoicing';
 import { CRM } from './crm/CRM';
+import { Inventory } from './inventory/Inventory';
 import { 
   LayoutDashboard, 
   Calculator, 
@@ -146,6 +147,8 @@ export const AppsGrid = () => {
       setCurrentApp('invoicing');
     } else if (appId === 'crm') {
       setCurrentApp('crm');
+    } else if (appId === 'inventory') {
+      setCurrentApp('inventory');
     } else {
       // For other apps that aren't implemented yet
       console.log('Navigating to:', route);
@@ -232,6 +235,26 @@ export const AppsGrid = () => {
             </Button>
           </div>
           <CRM />
+        </div>
+      </div>
+    );
+  }
+
+  if (currentApp === 'inventory') {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={handleBackToApps}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Apps</span>
+            </Button>
+          </div>
+          <Inventory />
         </div>
       </div>
     );

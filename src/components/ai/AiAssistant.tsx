@@ -62,8 +62,12 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   }, [fetchAllData]);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to bottom when messages change with a slight delay to ensure DOM is updated
+    const timeoutId = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, [currentChat?.messages]);
 
   const handleSetApiKey = () => {

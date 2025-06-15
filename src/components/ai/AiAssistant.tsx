@@ -4,7 +4,8 @@ import { contextAwareGeminiService, ChatMessage } from '@/services/contextAwareG
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2 } from 'lucide-react';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Chat {
   id: string;
@@ -37,6 +38,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [apiKeyMissing, setApiKeyMissing] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   // Fetch business data when component mounts
@@ -45,6 +47,12 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
 
   useEffect(() => {
     fetchAllData();
+    
+    // Check if API key is available
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      setApiKeyMissing(true);
+    }
   }, [fetchAllData]);
 
   useEffect(() => {
@@ -57,27 +65,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   }, [currentChat?.messages]);
 
   const generateChatTitle = (message: string): string => {
-    // Remove common words and clean the message
     const stopWords = ['the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'in', 'with', 'to', 'for', 'of', 'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'among', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'can', 'could', 'should', 'would', 'will', 'shall', 'may', 'might', 'must', 'ought', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'what', 'how', 'when', 'where', 'why', 'who'];
     
-    // Clean and split the message
     const words = message
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
       .filter(word => word.length > 2 && !stopWords.includes(word))
-      .slice(0, 4); // Take first 4 meaningful words
+      .slice(0, 4);
 
     if (words.length === 0) {
       return 'New Chat';
     }
 
-    // Capitalize first letter of each word and join
     const title = words
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    // Limit title length
     return title.length > 30 ? title.slice(0, 27) + '...' : title;
   };
 
@@ -99,7 +103,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   };
 
   const deleteChat = (chatId: string) => {
-    if (chats.length === 1) return; // Don't delete the last chat
+    if (chats.length === 1) return;
     
     setChats(prev => prev.filter(chat => chat.id !== chatId));
     if (currentChatId === chatId) {
@@ -116,7 +120,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   };
 
   const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || !currentChat) return;
+    if (!input.trim() || isLoading || !currentChat || apiKeyMissing) return;
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -124,17 +128,14 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       timestamp: new Date().toISOString()
     };
 
-    // Check if this is the first user message in the chat (excluding assistant's welcome message)
     const isFirstUserMessage = currentChat.messages.filter(msg => msg.role === 'user').length === 0;
 
-    // Update current chat with user message
     setChats(prev => prev.map(chat => 
       chat.id === currentChatId 
         ? { ...chat, messages: [...chat.messages, userMessage] }
         : chat
     ));
 
-    // Generate meaningful title if it's the first user message and chat title is still "New Chat"
     if (isFirstUserMessage && currentChat.title === 'New Chat') {
       const newTitle = generateChatTitle(input.trim());
       setChats(prev => prev.map(chat => 
@@ -150,7 +151,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     try {
       const response = await contextAwareGeminiService.generateResponse(
         input.trim(),
-        null, // Legacy parameter
+        null,
         currentChat.messages
       );
 
@@ -278,6 +279,17 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </Button>
         </div>
 
+        {apiKeyMissing && (
+          <div className="p-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                AI Assistant is not available. Please set your VITE_GEMINI_API_KEY environment variable to enable the AI features.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         <ScrollArea className="flex-1 min-h-0" ref={scrollAreaRef}>
           <div className="p-4 space-y-4">
             {currentChat?.messages.map((message, index) => (
@@ -337,11 +349,11 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about your business data..."
-              disabled={isLoading}
+              placeholder={apiKeyMissing ? "AI Assistant is not available" : "Ask about your business data..."}
+              disabled={isLoading || apiKeyMissing}
               className="flex-1"
             />
-            <Button onClick={handleSendMessage} disabled={isLoading || !input.trim()}>
+            <Button onClick={handleSendMessage} disabled={isLoading || !input.trim() || apiKeyMissing}>
               <Send className="h-4 w-4" />
             </Button>
           </div>

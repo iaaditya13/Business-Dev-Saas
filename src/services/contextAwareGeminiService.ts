@@ -20,16 +20,30 @@ interface BusinessContext {
 }
 
 class ContextAwareGeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
+  private isInitialized = false;
 
   constructor() {
+    // Don't initialize immediately - wait for API key
+  }
+
+  private initialize() {
+    if (this.isInitialized) return;
+    
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('Gemini API key not found');
+      console.warn('Gemini API key not found. AI Assistant will not be available.');
+      return;
     }
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      this.isInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize Gemini service:', error);
+    }
   }
 
   private generateBusinessContext(): BusinessContext {
@@ -151,6 +165,13 @@ Please respond as a knowledgeable business advisor using the provided data conte
     businessData: any, // Legacy parameter, now ignored
     chatHistory: ChatMessage[] = []
   ): Promise<string> {
+    // Initialize if not already done
+    this.initialize();
+
+    if (!this.isInitialized || !this.model) {
+      throw new Error('AI Assistant is not available. Please configure your Gemini API key in the environment variables.');
+    }
+
     try {
       // Generate real-time business context
       const context = this.generateBusinessContext();

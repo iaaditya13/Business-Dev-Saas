@@ -1,9 +1,8 @@
-
 import { create } from 'zustand';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from './authStore';
 
-// Types from database
+// Types from database - updated to match Supabase response
 export interface Invoice {
   id: string;
   user_id: string;
@@ -126,12 +125,27 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
         supabase.from('orders').select('*').eq('user_id', user.id)
       ]);
 
+      // Transform the data to match our interfaces
       set({
-        invoices: invoicesResult.data || [],
-        expenses: expensesResult.data || [],
-        leads: leadsResult.data || [],
+        invoices: (invoicesResult.data || []).map(item => ({
+          ...item,
+          items: Array.isArray(item.items) ? item.items : [],
+          status: item.status as Invoice['status']
+        })),
+        expenses: (expensesResult.data || []).map(item => ({
+          ...item,
+          status: item.status as Expense['status']
+        })),
+        leads: (leadsResult.data || []).map(item => ({
+          ...item,
+          status: item.status as Lead['status']
+        })),
         products: productsResult.data || [],
-        orders: ordersResult.data || [],
+        orders: (ordersResult.data || []).map(item => ({
+          ...item,
+          items: Array.isArray(item.items) ? item.items : [],
+          status: item.status as Order['status']
+        })),
         isLoading: false
       });
     } catch (error) {
@@ -154,7 +168,11 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        invoices: [...state.invoices, data]
+        invoices: [...state.invoices, {
+          ...data,
+          items: Array.isArray(data.items) ? data.items : [],
+          status: data.status as Invoice['status']
+        }]
       }));
     } catch (error) {
       console.error('Error adding invoice:', error);
@@ -174,7 +192,11 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        invoices: state.invoices.map(inv => inv.id === id ? data : inv)
+        invoices: state.invoices.map(inv => inv.id === id ? {
+          ...data,
+          items: Array.isArray(data.items) ? data.items : [],
+          status: data.status as Invoice['status']
+        } : inv)
       }));
     } catch (error) {
       console.error('Error updating invoice:', error);
@@ -196,7 +218,10 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        expenses: [...state.expenses, data]
+        expenses: [...state.expenses, {
+          ...data,
+          status: data.status as Expense['status']
+        }]
       }));
     } catch (error) {
       console.error('Error adding expense:', error);
@@ -218,7 +243,10 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        leads: [...state.leads, data]
+        leads: [...state.leads, {
+          ...data,
+          status: data.status as Lead['status']
+        }]
       }));
     } catch (error) {
       console.error('Error adding lead:', error);
@@ -238,7 +266,10 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        leads: state.leads.map(lead => lead.id === id ? data : lead)
+        leads: state.leads.map(lead => lead.id === id ? {
+          ...data,
+          status: data.status as Lead['status']
+        } : lead)
       }));
     } catch (error) {
       console.error('Error updating lead:', error);
@@ -302,7 +333,11 @@ export const useSupabaseBusinessStore = create<SupabaseBusinessStore>((set, get)
       if (error) throw error;
 
       set(state => ({
-        orders: [...state.orders, data]
+        orders: [...state.orders, {
+          ...data,
+          items: Array.isArray(data.items) ? data.items : [],
+          status: data.status as Order['status']
+        }]
       }));
     } catch (error) {
       console.error('Error adding order:', error);

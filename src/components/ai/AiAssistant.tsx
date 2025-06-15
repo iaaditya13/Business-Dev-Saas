@@ -4,7 +4,7 @@ import { contextAwareGeminiService, ChatMessage } from '@/services/contextAwareG
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle } from 'lucide-react';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Chat {
@@ -39,6 +39,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const [apiKeyMissing, setApiKeyMissing] = useState(false);
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [tempApiKey, setTempApiKey] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   // Fetch business data when component mounts
@@ -49,10 +51,8 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     fetchAllData();
     
     // Check if API key is available
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      setApiKeyMissing(true);
-    }
+    const isAvailable = contextAwareGeminiService.isAvailable();
+    setApiKeyMissing(!isAvailable);
   }, [fetchAllData]);
 
   useEffect(() => {
@@ -63,6 +63,15 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       }
     }
   }, [currentChat?.messages]);
+
+  const handleSetApiKey = () => {
+    if (tempApiKey.trim()) {
+      contextAwareGeminiService.setApiKey(tempApiKey.trim());
+      setApiKeyMissing(false);
+      setShowApiKeyInput(false);
+      setTempApiKey('');
+    }
+  };
 
   const generateChatTitle = (message: string): string => {
     const stopWords = ['the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'in', 'with', 'to', 'for', 'of', 'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'among', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'can', 'could', 'should', 'would', 'will', 'shall', 'may', 'might', 'must', 'ought', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'what', 'how', 'when', 'where', 'why', 'who'];
@@ -280,13 +289,32 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         </div>
 
         {apiKeyMissing && (
-          <div className="p-4">
+          <div className="p-4 space-y-4">
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                AI Assistant is not available. Please set your VITE_GEMINI_API_KEY environment variable to enable the AI features.
+                AI Assistant requires a Gemini API key to function. You can enter it below or set it as an environment variable.
               </AlertDescription>
             </Alert>
+            
+            {!showApiKeyInput ? (
+              <Button onClick={() => setShowApiKeyInput(true)} className="w-full">
+                <Key className="h-4 w-4 mr-2" />
+                Enter API Key
+              </Button>
+            ) : (
+              <div className="flex space-x-2">
+                <Input
+                  type="password"
+                  placeholder="Enter your Gemini API key"
+                  value={tempApiKey}
+                  onChange={(e) => setTempApiKey(e.target.value)}
+                  className="flex-1"
+                />
+                <Button onClick={handleSetApiKey}>Save</Button>
+                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>Cancel</Button>
+              </div>
+            )}
           </div>
         )}
 
@@ -349,7 +377,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={apiKeyMissing ? "AI Assistant is not available" : "Ask about your business data..."}
+              placeholder={apiKeyMissing ? "Please enter your API key first" : "Ask about your business data..."}
               disabled={isLoading || apiKeyMissing}
               className="flex-1"
             />

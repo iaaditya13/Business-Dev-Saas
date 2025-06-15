@@ -106,9 +106,13 @@ export const useAiChatStore = create<AiChatStore>((set, get) => ({
   updateChat: async (id: string, updates: Partial<Pick<AiChat, 'title' | 'messages'>>) => {
     try {
       // Cast messages to Json type for Supabase if present
-      const supabaseUpdates = updates.messages 
-        ? { ...updates, messages: updates.messages as any }
-        : updates;
+      const supabaseUpdates: any = {};
+      if (updates.title !== undefined) {
+        supabaseUpdates.title = updates.title;
+      }
+      if (updates.messages !== undefined) {
+        supabaseUpdates.messages = updates.messages as any;
+      }
 
       const { data, error } = await supabase
         .from('ai_chats')

@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { useBusinessStore } from '@/stores/businessStore';
 import { geminiService, ChatMessage } from '@/services/geminiService';
@@ -51,6 +52,31 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
     }
   }, [currentChat?.messages]);
 
+  const generateChatTitle = (message: string): string => {
+    // Remove common words and clean the message
+    const stopWords = ['the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'in', 'with', 'to', 'for', 'of', 'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'among', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'can', 'could', 'should', 'would', 'will', 'shall', 'may', 'might', 'must', 'ought', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'what', 'how', 'when', 'where', 'why', 'who'];
+    
+    // Clean and split the message
+    const words = message
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.includes(word))
+      .slice(0, 4); // Take first 4 meaningful words
+
+    if (words.length === 0) {
+      return 'New Chat';
+    }
+
+    // Capitalize first letter of each word and join
+    const title = words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
+    // Limit title length
+    return title.length > 30 ? title.slice(0, 27) + '...' : title;
+  };
+
   const createNewChat = () => {
     const newChat: Chat = {
       id: Date.now().toString(),
@@ -94,6 +120,9 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       timestamp: new Date().toISOString()
     };
 
+    // Check if this is the first user message in the chat (excluding assistant's welcome message)
+    const isFirstUserMessage = currentChat.messages.filter(msg => msg.role === 'user').length === 0;
+
     // Update current chat with user message
     setChats(prev => prev.map(chat => 
       chat.id === currentChatId 
@@ -101,9 +130,9 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
         : chat
     ));
 
-    // Update chat title if it's still "New Chat"
-    if (currentChat.title === 'New Chat') {
-      const newTitle = input.trim().slice(0, 30) + (input.trim().length > 30 ? '...' : '');
+    // Generate meaningful title if it's the first user message and chat title is still "New Chat"
+    if (isFirstUserMessage && currentChat.title === 'New Chat') {
+      const newTitle = generateChatTitle(input.trim());
       setChats(prev => prev.map(chat => 
         chat.id === currentChatId 
           ? { ...chat, title: newTitle }

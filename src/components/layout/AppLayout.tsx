@@ -2,11 +2,8 @@
 import { useState } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Sidebar } from '@/components/layout/Sidebar';
 import { AiAssistant } from '@/components/ai/AiAssistant';
-import { AppsDrawer } from '@/components/layout/AppsDrawer';
-import { Menu, LogOut, Bot, Grid3x3 } from 'lucide-react';
+import { LogOut, Bot } from 'lucide-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,7 +11,6 @@ interface AppLayoutProps {
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
   const [showAiAssistant, setShowAiAssistant] = useState(false);
-  const [showAppsDrawer, setShowAppsDrawer] = useState(false);
   const { user, logout } = useAuthStore();
 
   return (
@@ -22,32 +18,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       {/* Header */}
       <header className="bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 p-0">
-                <Sidebar />
-              </SheetContent>
-            </Sheet>
-            
-            <h1 className="text-xl font-semibold text-foreground">Areion</h1>
-          </div>
+          <h1 className="text-xl font-semibold text-foreground">Areion</h1>
           
           <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAppsDrawer(!showAppsDrawer)}
-              className="flex items-center space-x-2"
-            >
-              <Grid3x3 className="h-4 w-4" />
-              <span>Apps</span>
-            </Button>
-            
             <Button
               variant="outline"
               size="sm"
@@ -69,22 +42,10 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
       </header>
 
       <div className="flex">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block w-64 bg-card border-r border-border">
-          <Sidebar />
-        </div>
-
         {/* Main Content */}
-        <main className="flex-1 p-6 bg-background">
+        <main className="flex-1">
           {children}
         </main>
-
-        {/* Apps Drawer */}
-        {showAppsDrawer && (
-          <div className="w-96 border-l border-border bg-card">
-            <AppsDrawer onClose={() => setShowAppsDrawer(false)} />
-          </div>
-        )}
 
         {/* AI Assistant */}
         {showAiAssistant && (

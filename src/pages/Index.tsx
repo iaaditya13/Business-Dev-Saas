@@ -1,8 +1,8 @@
 
-import { Dashboard } from '@/components/dashboard/Dashboard';
+import { AppsGrid } from '@/components/apps/AppsGrid';
 
 const Index = () => {
-  return <Dashboard />;
+  return <AppsGrid />;
 };
 
 export default Index;

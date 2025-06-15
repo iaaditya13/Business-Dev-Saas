@@ -16,8 +16,8 @@ export const Dashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Business Dashboard</h1>
-          <p className="text-gray-600">Overview of your business performance</p>
+          <h1 className="text-3xl font-bold text-foreground">Business Dashboard</h1>
+          <p className="text-muted-foreground">Overview of your business performance</p>
         </div>
         
         <ToggleGroup

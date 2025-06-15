@@ -16,9 +16,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const { user, logout } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3">
+      <header className="bg-card border-b border-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Sheet>
@@ -32,7 +32,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               </SheetContent>
             </Sheet>
             
-            <h1 className="text-xl font-semibold text-gray-900">Business Manager</h1>
+            <h1 className="text-xl font-semibold text-foreground">Business Manager</h1>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -46,7 +46,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               <span>AI Assistant</span>
             </Button>
             
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <span>Welcome, {user?.name}</span>
               <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="h-4 w-4" />
@@ -58,18 +58,18 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <div className="hidden md:block w-64 bg-white border-r border-gray-200">
+        <div className="hidden md:block w-64 bg-card border-r border-border">
           <Sidebar />
         </div>
 
         {/* Main Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 bg-background">
           {children}
         </main>
 
         {/* AI Assistant */}
         {showAiAssistant && (
-          <div className="w-96 border-l border-gray-200 bg-white">
+          <div className="w-96 border-l border-border bg-card">
             <AiAssistant onClose={() => setShowAiAssistant(false)} />
           </div>
         )}

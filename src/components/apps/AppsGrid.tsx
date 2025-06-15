@@ -1,6 +1,10 @@
 
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import { Dashboard } from '@/components/dashboard/Dashboard';
 import { 
   LayoutDashboard, 
   Calculator, 
@@ -128,9 +132,39 @@ const apps = [
 ];
 
 export const AppsGrid = () => {
-  const handleAppClick = (route: string) => {
-    window.location.href = route;
+  const [currentApp, setCurrentApp] = useState<string | null>(null);
+
+  const handleAppClick = (appId: string, route: string) => {
+    if (appId === 'dashboard') {
+      setCurrentApp('dashboard');
+    } else {
+      window.location.href = route;
+    }
   };
+
+  const handleBackToApps = () => {
+    setCurrentApp(null);
+  };
+
+  if (currentApp === 'dashboard') {
+    return (
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <Button 
+              variant="outline" 
+              onClick={handleBackToApps}
+              className="flex items-center space-x-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Apps</span>
+            </Button>
+          </div>
+          <Dashboard />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -145,7 +179,7 @@ export const AppsGrid = () => {
             <Card 
               key={app.id} 
               className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
-              onClick={() => handleAppClick(app.route)}
+              onClick={() => handleAppClick(app.id, app.route)}
             >
               <CardContent className="p-6">
                 <div className="flex flex-col items-center text-center space-y-4">

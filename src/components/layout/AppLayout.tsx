@@ -4,7 +4,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import { AiAssistant } from '@/components/ai/AiAssistant';
-import { LogOut, Settings, Bell, Menu } from 'lucide-react';
+import { LogOut, MessageCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -57,44 +57,24 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                 className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
                 onClick={() => setShowAiAssistant(true)}
               >
-                <Menu className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" />
                 <span className="hidden sm:inline">AI Assistant</span>
               </Button>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
-              >
-                <Bell className="h-4 w-4" />
-                <span className="hidden sm:inline">Notifications</span>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
-              >
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </Button>
-              
-              <div className="flex items-center space-x-3 pl-4 border-l border-border/50">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-dark">{displayName}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </div>
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                  <span className="text-white font-semibold text-sm">
-                    {displayName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <Button variant="ghost" size="sm" onClick={logout} className="hover:bg-destructive/10 hover:text-destructive">
-                  <LogOut className="h-4 w-4" />
-                </Button>
+            <div className="flex items-center space-x-3 pl-4 border-l border-border/50">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-dark">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                <span className="text-white font-semibold text-sm">
+                  {displayName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={logout} className="hover:bg-destructive/10 hover:text-destructive">
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </header>

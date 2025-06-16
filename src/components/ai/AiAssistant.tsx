@@ -9,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface AiAssistantProps {
   onClose: () => void;

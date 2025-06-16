@@ -4,10 +4,9 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
 import { AiAssistant } from '@/components/ai/AiAssistant';
-import { LogOut, Bot, Settings, Bell } from 'lucide-react';
+import { LogOut, Settings, Bell, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import { ModernSidebar } from './ModernSidebar';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -37,80 +36,76 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-gray-50/30">
-      <div className="flex h-screen">
-        {/* Modern Sidebar */}
-        <ModernSidebar />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <header className="bg-white border-b border-border/50 px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
+      <div className="flex flex-col h-screen">
+        {/* Header */}
+        <header className="bg-white border-b border-border/50 px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">A</span>
+                </div>
                 <div>
-                  <h1 className="text-2xl font-bold font-display text-dark">
-                    {userProfile?.business_name ? 'Dashboard' : 'Welcome'}
-                  </h1>
-                  {userProfile?.business_name && (
-                    <p className="text-muted-foreground">{userProfile.business_name}</p>
-                  )}
+                  <h1 className="text-xl font-bold font-display text-dark">Areion</h1>
+                  <p className="text-sm text-muted-foreground">Business Platform</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
-                >
-                  <Bell className="h-4 w-4" />
-                  <span className="hidden sm:inline">Notifications</span>
-                </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
+                onClick={() => setShowAiAssistant(true)}
+              >
+                <Menu className="h-4 w-4" />
+                <span className="hidden sm:inline">AI Assistant</span>
+              </Button>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
+              >
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">Notifications</span>
+              </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
-                >
-                  <Settings className="h-4 w-4" />
-                  <span className="hidden sm:inline">Settings</span>
-                </Button>
-                
-                <div className="flex items-center space-x-3 pl-4 border-l border-border/50">
-                  <div className="text-right hidden sm:block">
-                    <p className="text-sm font-medium text-dark">{displayName}</p>
-                    <p className="text-xs text-muted-foreground">{user?.email}</p>
-                  </div>
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
-                      {displayName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <Button variant="ghost" size="sm" onClick={logout} className="hover:bg-destructive/10 hover:text-destructive">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center space-x-2 border-border/50 hover:border-primary/50"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </Button>
+              
+              <div className="flex items-center space-x-3 pl-4 border-l border-border/50">
+                <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-dark">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
+                <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                  <span className="text-white font-semibold text-sm">
+                    {displayName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={logout} className="hover:bg-destructive/10 hover:text-destructive">
+                  <LogOut className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Main Content */}
-          <main className="flex-1 p-8 overflow-auto custom-scrollbar">
-            <div className="animate-fade-in">
-              {children}
-            </div>
-          </main>
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 p-8 overflow-auto custom-scrollbar">
+          <div className="animate-fade-in max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
-
-      {/* Floating AI Assistant Button */}
-      <Button
-        onClick={() => setShowAiAssistant(true)}
-        className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-brand hover:shadow-lg animate-float z-50"
-        size="icon"
-      >
-        <Bot className="h-6 w-6" />
-      </Button>
 
       {/* AI Assistant Dialog */}
       <Dialog open={showAiAssistant} onOpenChange={setShowAiAssistant}>

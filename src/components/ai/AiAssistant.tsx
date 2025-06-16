@@ -6,10 +6,10 @@ import { contextAwareGeminiService } from '@/services/contextAwareGeminiService'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, AlertCircle, Key, Sparkles } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AiAssistantProps {
   onClose: () => void;
@@ -19,15 +19,12 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const { chats, fetchChats, createChat, updateChat, deleteChat } = useAiChatStore();
   const { user } = useAuthStore();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [tempApiKey, setTempApiKey] = useState('');
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Fetch business data when component mounts
@@ -36,14 +33,6 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
 
   useEffect(() => {
     fetchAllData();
-    
-    // Check if API key is available
-    const checkApiKey = () => {
-      const isAvailable = contextAwareGeminiService.isAvailable();
-      setApiKeyMissing(!isAvailable);
-    };
-    
-    checkApiKey();
 
     // Fetch chats if user is authenticated
     if (user) {
@@ -66,20 +55,6 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
 
     return () => clearTimeout(timeoutId);
   }, [currentChat?.messages]);
-
-  const handleSetApiKey = () => {
-    if (tempApiKey.trim()) {
-      contextAwareGeminiService.setApiKey(tempApiKey.trim());
-      setApiKeyMissing(false);
-      setShowApiKeyInput(false);
-      setTempApiKey('');
-    }
-  };
-
-  const handleShowApiKeyInput = () => {
-    setShowApiKeyInput(true);
-    setTempApiKey('');
-  };
 
   const generateChatTitle = (message: string): string => {
     const stopWords = ['the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'in', 'with', 'to', 'for', 'of', 'as', 'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'among', 'through', 'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'can', 'could', 'should', 'would', 'will', 'shall', 'may', 'might', 'must', 'ought', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their', 'what', 'how', 'when', 'where', 'why', 'who'];
@@ -164,12 +139,6 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const handleSendMessage = async () => {
     if (!input.trim() || isLoading || !user) return;
 
-    // Check API key availability before sending
-    if (!contextAwareGeminiService.isAvailable()) {
-      setApiKeyMissing(true);
-      return;
-    }
-
     // If no current chat, create one
     if (!currentChatId) {
       try {
@@ -229,7 +198,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       console.error('Error generating response:', error);
       const errorMessage: AiChatMessage = {
         role: 'assistant',
-        content: 'I apologize, but I encountered an error processing your request. Please make sure your Gemini API key is configured correctly and try again.',
+        content: 'I apologize, but I encountered an error processing your request. Please try again.',
         timestamp: new Date().toISOString()
       };
       
@@ -239,8 +208,6 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       } catch (updateError) {
         console.error('Error saving error message:', updateError);
       }
-      
-      setApiKeyMissing(true);
     } finally {
       setIsLoading(false);
     }
@@ -256,195 +223,171 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   if (!user) {
     return (
       <div className="flex h-full max-h-[80vh] items-center justify-center bg-white rounded-2xl">
-        <div className="text-center p-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Bot className="h-8 w-8 text-white" />
+        <div className="text-center p-4 sm:p-8">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Bot className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
-          <h3 className="text-xl font-semibold text-dark mb-2">Authentication Required</h3>
-          <p className="text-muted-foreground">Please log in to use the AI Assistant.</p>
+          <h3 className="text-lg sm:text-xl font-semibold text-dark mb-2">Authentication Required</h3>
+          <p className="text-sm text-muted-foreground">Please log in to use the AI Assistant.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-full max-h-[85vh] bg-white rounded-2xl overflow-hidden">
-      {/* Chat History Sidebar */}
-      <div className="w-80 border-r border-border/50 bg-gray-50/50 flex flex-col">
-        <div className="p-6 border-b border-border/50">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-              <Bot className="h-5 w-5 text-white" />
+    <div className={cn(
+      "flex h-full bg-white rounded-2xl overflow-hidden",
+      isMobile ? "flex-col max-h-[95vh]" : "max-h-[85vh]"
+    )}>
+      {/* Chat History Sidebar - Hidden on mobile */}
+      {!isMobile && (
+        <div className="w-80 border-r border-border/50 bg-gray-50/50 flex flex-col">
+          <div className="p-6 border-b border-border/50">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-dark">AI Assistant</h3>
+                <p className="text-sm text-muted-foreground">Business Intelligence</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-dark">AI Assistant</h3>
-              <p className="text-sm text-muted-foreground">Business Intelligence</p>
-            </div>
+            
+            <Button 
+              onClick={createNewChat}
+              className="w-full justify-start"
+              size="sm"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Conversation
+            </Button>
           </div>
           
-          <Button 
-            onClick={createNewChat}
-            className="w-full justify-start mb-3"
-            size="sm"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            New Conversation
-          </Button>
-          
-          <Button 
-            onClick={handleShowApiKeyInput}
-            variant="outline"
-            className="w-full justify-start border-border/50"
-            size="sm"
-          >
-            <Key className="h-4 w-4 mr-2" />
-            Configure API Key
-          </Button>
-        </div>
-        
-        <ScrollArea className="flex-1 custom-scrollbar">
-          <div className="p-4 space-y-2">
-            {chats.map(chat => (
-              <div
-                key={chat.id}
-                className={cn(
-                  'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
-                  currentChatId === chat.id 
-                    ? 'bg-primary/10 border border-primary/20' 
-                    : 'hover:bg-white hover:shadow-soft'
-                )}
-                onClick={() => setCurrentChatId(chat.id)}
-              >
-                <MessageSquare className={cn(
-                  'h-4 w-4 flex-shrink-0',
-                  currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
-                )} />
-                
-                {editingChatId === chat.id ? (
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        updateChatTitle(chat.id, editTitle || chat.title);
-                      }
-                    }}
-                    className="h-8 text-sm border-primary/30"
-                    autoFocus
-                  />
-                ) : (
-                  <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
-                )}
-                
-                <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 hover:bg-primary/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingChatId(chat.id);
-                      setEditTitle(chat.title);
-                    }}
-                  >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                  {chats.length > 1 && (
+          <ScrollArea className="flex-1 custom-scrollbar">
+            <div className="p-4 space-y-2">
+              {chats.map(chat => (
+                <div
+                  key={chat.id}
+                  className={cn(
+                    'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
+                    currentChatId === chat.id 
+                      ? 'bg-primary/10 border border-primary/20' 
+                      : 'hover:bg-white hover:shadow-soft'
+                  )}
+                  onClick={() => setCurrentChatId(chat.id)}
+                >
+                  <MessageSquare className={cn(
+                    'h-4 w-4 flex-shrink-0',
+                    currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
+                  )} />
+                  
+                  {editingChatId === chat.id ? (
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          updateChatTitle(chat.id, editTitle || chat.title);
+                        }
+                      }}
+                      className="h-8 text-sm border-primary/30"
+                      autoFocus
+                    />
+                  ) : (
+                    <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
+                  )}
+                  
+                  <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="h-7 w-7 p-0 hover:bg-primary/10"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteChatHandler(chat.id);
+                        setEditingChatId(chat.id);
+                        setEditTitle(chat.title);
                       }}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Edit3 className="h-3 w-3" />
                     </Button>
-                  )}
+                    {chats.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteChatHandler(chat.id);
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex items-center justify-between p-6 border-b border-border/50 flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-white" />
+        <div className="flex items-center justify-between p-3 sm:p-6 border-b border-border/50 flex-shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
             </div>
             <div>
-              <h3 className="font-semibold text-dark">Context-Aware AI</h3>
-              <p className="text-sm text-muted-foreground">Business Intelligence Assistant</p>
+              <h3 className="font-semibold text-dark text-sm sm:text-base">AI Assistant</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Business Intelligence</p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-100">
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            {isMobile && (
+              <Button 
+                onClick={createNewChat}
+                size="sm"
+                variant="outline"
+                className="text-xs px-2 py-1"
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={onClose} className="hover:bg-gray-100 p-1 sm:p-2">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        {(apiKeyMissing || showApiKeyInput) && (
-          <div className="p-6 space-y-4 border-b border-border/50 bg-warning/5">
-            {apiKeyMissing && (
-              <Alert className="border-warning/30 bg-warning/10">
-                <AlertCircle className="h-4 w-4 text-warning" />
-                <AlertDescription className="text-warning-foreground">
-                  AI Assistant requires a Gemini API key to function. Please enter your API key below.
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="flex space-x-3">
-              <Input
-                type="password"
-                placeholder="Enter your Gemini API key (AIzaSy...)"
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                className="flex-1 input-focus"
-              />
-              <Button onClick={handleSetApiKey} disabled={!tempApiKey.trim()}>
-                Save Key
-              </Button>
-              {!apiKeyMissing && (
-                <Button variant="outline" onClick={() => setShowApiKeyInput(false)}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-
         <ScrollArea className="flex-1 min-h-0 custom-scrollbar" style={{ overflow: 'auto' }}>
-          <div className="p-6 space-y-6">
+          <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
             {currentChat?.messages.map((message, index) => (
               <div
                 key={index}
                 className={cn(
-                  'flex items-start space-x-4 animate-fade-in',
+                  'flex items-start space-x-2 sm:space-x-4 animate-fade-in',
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 )}
               >
                 {message.role === 'assistant' && (
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                    <Bot className="h-5 w-5 text-white" />
+                  <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                    <Bot className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
                   </div>
                 )}
                 
                 <div
                   className={cn(
-                    'max-w-[75%] px-6 py-4 rounded-2xl break-words shadow-soft',
+                    'max-w-[85%] sm:max-w-[75%] px-3 py-2 sm:px-6 sm:py-4 rounded-2xl break-words shadow-soft',
                     message.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-white border border-border/50 text-dark'
                   )}
                 >
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                  <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                   <p className={cn(
-                    'text-xs mt-3 opacity-70',
+                    'text-xs mt-2 sm:mt-3 opacity-70',
                     message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   )}>
                     {new Date(message.timestamp).toLocaleTimeString()}
@@ -452,23 +395,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
                 </div>
 
                 {message.role === 'user' && (
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-secondary to-warning rounded-xl flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                  <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-secondary to-warning rounded-xl flex items-center justify-center">
+                    <User className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
                   </div>
                 )}
               </div>
             ))}
             
             {isLoading && (
-              <div className="flex items-start space-x-4 animate-fade-in">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                  <Bot className="h-5 w-5 text-white" />
+              <div className="flex items-start space-x-2 sm:space-x-4 animate-fade-in">
+                <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                  <Bot className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <div className="bg-white border border-border/50 rounded-2xl px-6 py-4 shadow-soft">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="bg-white border border-border/50 rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-soft">
+                  <div className="flex space-x-1 sm:space-x-2">
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce"></div>
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -479,22 +422,23 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         </ScrollArea>
 
-        <div className="p-6 border-t border-border/50 flex-shrink-0 bg-gray-50/30">
-          <div className="flex space-x-3">
+        <div className="p-3 sm:p-6 border-t border-border/50 flex-shrink-0 bg-gray-50/30">
+          <div className="flex space-x-2 sm:space-x-3">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder={apiKeyMissing ? "Please configure your API key first" : "Ask anything about your business..."}
-              disabled={isLoading || apiKeyMissing}
-              className="flex-1 input-focus border-border/50 bg-white"
+              placeholder="Ask anything about your business..."
+              disabled={isLoading}
+              className="flex-1 input-focus border-border/50 bg-white text-sm"
             />
             <Button 
               onClick={handleSendMessage} 
-              disabled={isLoading || !input.trim() || apiKeyMissing}
+              disabled={isLoading || !input.trim()}
               className="shadow-brand"
+              size={isMobile ? "sm" : "default"}
             >
-              <Send className="h-4 w-4" />
+              <Send className="h-3 w-3 sm:h-4 sm:w-4" />
             </Button>
           </div>
         </div>

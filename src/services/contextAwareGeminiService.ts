@@ -19,32 +19,20 @@ interface BusinessContext {
 }
 
 class ContextAwareGeminiService {
-  private genAI: GoogleGenerativeAI | null = null;
-  private model: any = null;
+  private genAI: GoogleGenerativeAI;
+  private model: any;
   private isInitialized = false;
-  private apiKey: string | null = null;
+  private readonly apiKey = 'AIzaSyAYgUo2NwMHpxzUDgHB2d7kN-cwe9mlO7o';
 
   constructor() {
-    // Don't initialize immediately - wait for API key
+    this.initialize();
   }
 
   private initialize() {
     if (this.isInitialized) return;
     
-    // Try multiple ways to get the API key
-    this.apiKey = 
-      import.meta.env.VITE_GEMINI_API_KEY || 
-      window.localStorage.getItem('VITE_GEMINI_API_KEY') ||
-      null;
-
-    console.log('Attempting to initialize Gemini service...');
-    console.log('API Key found:', !!this.apiKey);
+    console.log('Initializing Gemini service with permanent API key...');
     
-    if (!this.apiKey) {
-      console.warn('Gemini API key not found. Checked import.meta.env.VITE_GEMINI_API_KEY and localStorage.');
-      return;
-    }
-
     try {
       this.genAI = new GoogleGenerativeAI(this.apiKey);
       this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -55,15 +43,7 @@ class ContextAwareGeminiService {
     }
   }
 
-  public setApiKey(apiKey: string) {
-    this.apiKey = apiKey;
-    window.localStorage.setItem('VITE_GEMINI_API_KEY', apiKey);
-    this.isInitialized = false; // Reset to reinitialize
-    this.initialize();
-  }
-
   public isAvailable(): boolean {
-    this.initialize();
     return this.isInitialized && !!this.model;
   }
 
@@ -186,11 +166,8 @@ Please respond as a knowledgeable business advisor using the provided data conte
     businessData: any, // Legacy parameter, now ignored
     chatHistory: ChatMessage[] = []
   ): Promise<string> {
-    // Initialize if not already done
-    this.initialize();
-
     if (!this.isInitialized || !this.model) {
-      throw new Error('AI Assistant is not available. Please configure your Gemini API key.');
+      throw new Error('AI Assistant is not available.');
     }
 
     try {
@@ -214,7 +191,7 @@ Please respond as a knowledgeable business advisor using the provided data conte
       return response.text();
     } catch (error) {
       console.error('Error generating response:', error);
-      throw new Error('Failed to generate AI response. Please check your API key and try again.');
+      throw new Error('Failed to generate AI response. Please try again.');
     }
   }
 }

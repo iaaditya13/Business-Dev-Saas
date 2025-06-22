@@ -263,72 +263,80 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
             </Button>
           </div>
           
-          <ScrollArea className="flex-1 custom-scrollbar">
-            <div className="p-4 space-y-2">
-              {chats.map(chat => (
-                <div
-                  key={chat.id}
-                  className={cn(
-                    'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
-                    currentChatId === chat.id 
-                      ? 'bg-primary/10 border border-primary/20' 
-                      : 'hover:bg-white hover:shadow-soft'
-                  )}
-                  onClick={() => setCurrentChatId(chat.id)}
-                >
-                  <MessageSquare className={cn(
-                    'h-4 w-4 flex-shrink-0',
-                    currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
-                  )} />
-                  
-                  {editingChatId === chat.id ? (
-                    <Input
-                      value={editTitle}
-                      onChange={(e) => setEditTitle(e.target.value)}
-                      onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          updateChatTitle(chat.id, editTitle || chat.title);
-                        }
-                      }}
-                      className="h-8 text-sm border-primary/30"
-                      autoFocus
-                    />
-                  ) : (
-                    <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
-                  )}
-                  
-                  <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 hover:bg-primary/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setEditingChatId(chat.id);
-                        setEditTitle(chat.title);
-                      }}
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                    {chats.length > 1 && (
+          <div className="flex-1 overflow-hidden">
+            <div 
+              className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin'
+              }}
+            >
+              <div className="p-4 space-y-2">
+                {chats.map(chat => (
+                  <div
+                    key={chat.id}
+                    className={cn(
+                      'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
+                      currentChatId === chat.id 
+                        ? 'bg-primary/10 border border-primary/20' 
+                        : 'hover:bg-white hover:shadow-soft'
+                    )}
+                    onClick={() => setCurrentChatId(chat.id)}
+                  >
+                    <MessageSquare className={cn(
+                      'h-4 w-4 flex-shrink-0',
+                      currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
+                    )} />
+                    
+                    {editingChatId === chat.id ? (
+                      <Input
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            updateChatTitle(chat.id, editTitle || chat.title);
+                          }
+                        }}
+                        className="h-8 text-sm border-primary/30"
+                        autoFocus
+                      />
+                    ) : (
+                      <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
+                    )}
+                    
+                    <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        className="h-7 w-7 p-0 hover:bg-primary/10"
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteChatHandler(chat.id);
+                          setEditingChatId(chat.id);
+                          setEditTitle(chat.title);
                         }}
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Edit3 className="h-3 w-3" />
                       </Button>
-                    )}
+                      {chats.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteChatHandler(chat.id);
+                          }}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </ScrollArea>
+          </div>
         </div>
       )}
 
@@ -361,66 +369,74 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-0 custom-scrollbar" style={{ overflow: 'auto' }}>
-          <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-            {currentChat?.messages.map((message, index) => (
-              <div
-                key={index}
-                className={cn(
-                  'flex items-start space-x-2 sm:space-x-4 animate-fade-in',
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                )}
-              >
-                {message.role === 'assistant' && (
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div 
+            className="h-full overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-gray-100 scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin'
+            }}
+          >
+            <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+              {currentChat?.messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={cn(
+                    'flex items-start space-x-2 sm:space-x-4 animate-fade-in',
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  {message.role === 'assistant' && (
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+                      <Bot className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
+                    </div>
+                  )}
+                  
+                  <div
+                    className={cn(
+                      'max-w-[85%] sm:max-w-[75%] px-3 py-2 sm:px-6 sm:py-4 rounded-2xl break-words shadow-soft',
+                      message.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-white border border-border/50 text-dark'
+                    )}
+                  >
+                    <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    <p className={cn(
+                      'text-xs mt-2 sm:mt-3 opacity-70',
+                      message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    )}>
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </p>
+                  </div>
+
+                  {message.role === 'user' && (
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-secondary to-warning rounded-xl flex items-center justify-center">
+                      <User className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="flex items-start space-x-2 sm:space-x-4 animate-fade-in">
                   <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
                     <Bot className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
                   </div>
-                )}
-                
-                <div
-                  className={cn(
-                    'max-w-[85%] sm:max-w-[75%] px-3 py-2 sm:px-6 sm:py-4 rounded-2xl break-words shadow-soft',
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-white border border-border/50 text-dark'
-                  )}
-                >
-                  <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-                  <p className={cn(
-                    'text-xs mt-2 sm:mt-3 opacity-70',
-                    message.role === 'user' ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                  )}>
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </p>
-                </div>
-
-                {message.role === 'user' && (
-                  <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-secondary to-warning rounded-xl flex items-center justify-center">
-                    <User className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {isLoading && (
-              <div className="flex items-start space-x-2 sm:space-x-4 animate-fade-in">
-                <div className="flex-shrink-0 w-6 h-6 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                  <Bot className="h-3 w-3 sm:h-5 sm:w-5 text-white" />
-                </div>
-                <div className="bg-white border border-border/50 rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-soft">
-                  <div className="flex space-x-1 sm:space-x-2">
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce"></div>
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="bg-white border border-border/50 rounded-2xl px-3 py-2 sm:px-6 sm:py-4 shadow-soft">
+                    <div className="flex space-x-1 sm:space-x-2">
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce"></div>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            
-            {/* Invisible div to scroll to */}
-            <div ref={messagesEndRef} />
+              )}
+              
+              {/* Invisible div to scroll to */}
+              <div ref={messagesEndRef} />
+            </div>
           </div>
-        </ScrollArea>
+        </div>
 
         <div className="p-3 sm:p-6 border-t border-border/50 flex-shrink-0 bg-gray-50/30">
           <div className="flex space-x-2 sm:space-x-3">

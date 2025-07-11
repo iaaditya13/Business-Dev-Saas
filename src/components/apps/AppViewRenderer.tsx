@@ -13,6 +13,7 @@ import { Calendar } from './calendar/Calendar';
 import { Messaging } from './messaging/Messaging';
 import { Security } from './security/Security';
 import { Reports } from './reports/Reports';
+import { AiAssistantApp } from './ai-assistant/AiAssistantApp';
 
 interface AppViewRendererProps {
   currentApp: string;
@@ -24,6 +25,8 @@ export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererPro
     switch (currentApp) {
       case 'dashboard':
         return <Dashboard />;
+      case 'ai-assistant':
+        return <AiAssistantApp />;
       case 'accounting':
         return <Accounting />;
       case 'invoicing':

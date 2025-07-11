@@ -2,10 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
-import { AiAssistant } from '@/components/ai/AiAssistant';
-import { LogOut, MessageCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AppLayoutProps {
@@ -13,7 +10,6 @@ interface AppLayoutProps {
 }
 
 export const AppLayout = ({ children }: AppLayoutProps) => {
-  const [showAiAssistant, setShowAiAssistant] = useState(false);
   const [userProfile, setUserProfile] = useState<{ full_name?: string; business_name?: string } | null>(null);
   const { user, logout } = useAuthStore();
 
@@ -50,16 +46,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                   <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Business Platform</p>
                 </div>
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center space-x-1 sm:space-x-2 border-border/50 hover:border-primary/50 px-2 sm:px-3"
-                onClick={() => setShowAiAssistant(true)}
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="hidden sm:inline text-sm">AI Assistant</span>
-              </Button>
             </div>
             
             <div className="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-4 border-l border-border/50">
@@ -86,20 +72,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           </div>
         </main>
       </div>
-
-      {/* AI Assistant Dialog */}
-      <Dialog open={showAiAssistant} onOpenChange={setShowAiAssistant}>
-        <DialogPortal>
-          <DialogOverlay className="bg-black/20 backdrop-blur-sm" />
-          <div
-            className={cn(
-              "fixed left-[50%] top-[50%] z-50 grid w-[95vw] sm:w-full max-w-5xl translate-x-[-50%] translate-y-[-50%] gap-4 border-0 bg-white p-0 shadow-2xl duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-2xl h-[90vh] sm:h-[85vh]"
-            )}
-          >
-            <AiAssistant onClose={() => setShowAiAssistant(false)} />
-          </div>
-        </DialogPortal>
-      </Dialog>
     </div>
   );
 };

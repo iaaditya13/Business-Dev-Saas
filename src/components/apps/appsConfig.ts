@@ -11,7 +11,8 @@ import {
   Calendar, 
   MessageSquare, 
   Shield, 
-  BarChart3 
+  BarChart3,
+  Bot
 } from 'lucide-react';
 
 export interface AppConfig {
@@ -33,6 +34,15 @@ export const apps: AppConfig[] = [
     category: 'Overview',
     color: 'bg-blue-500',
     route: '/dashboard'
+  },
+  {
+    id: 'ai-assistant',
+    name: 'AI Assistant',
+    description: 'Get AI-powered business insights',
+    icon: Bot,
+    category: 'Productivity',
+    color: 'bg-violet-500',
+    route: '/ai-assistant'
   },
   {
     id: 'accounting',

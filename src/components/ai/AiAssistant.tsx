@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { contextAwareGeminiService } from '@/services/contextAwareGeminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -26,6 +25,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   
   // Fetch business data when component mounts
   const { fetchAllData } = useSupabaseBusinessStore();
@@ -242,7 +242,7 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
       {/* Chat History Sidebar - Hidden on mobile */}
       {!isMobile && (
         <div className="w-80 border-r border-border/50 bg-gray-50/50 flex flex-col">
-          <div className="p-6 border-b border-border/50">
+          <div className="p-6 border-b border-border/50 flex-shrink-0">
             <div className="flex items-center space-x-3 mb-6">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
                 <Bot className="h-5 w-5 text-white" />
@@ -263,8 +263,15 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
             </Button>
           </div>
           
-          <div className="flex-1 overflow-auto">
-            <div className="p-4 space-y-2">
+          <div className="flex-1 min-h-0">
+            <div 
+              className="h-full overflow-y-auto p-4 space-y-2"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(0, 0, 0, 0.2) transparent'
+              }}
+            >
               {chats.map(chat => (
                 <div
                   key={chat.id}
@@ -361,16 +368,17 @@ export const AiAssistant = ({ onClose }: AiAssistantProps) => {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 flex flex-col">
           <div 
-            className="h-full overflow-y-auto overflow-x-hidden"
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-6"
             style={{
               WebkitOverflowScrolling: 'touch',
-              touchAction: 'pan-y',
-              overscrollBehavior: 'contain'
+              overscrollBehavior: 'contain',
+              touchAction: 'pan-y'
             }}
           >
-            <div className="p-3 sm:p-6 space-y-4 sm:space-y-6 min-h-full">
+            <div className="space-y-4 sm:space-y-6">
               {currentChat?.messages.map((message, index) => (
                 <div
                   key={index}

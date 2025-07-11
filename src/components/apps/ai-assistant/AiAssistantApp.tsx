@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useSupabaseBusinessStore } from '@/stores/supabaseBusinessStore';
 import { useAiChatStore, AiChatMessage } from '@/stores/aiChatStore';
@@ -6,7 +5,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { contextAwareGeminiService } from '@/services/contextAwareGeminiService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, Sparkles } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Send, Bot, User, Plus, MessageSquare, Edit3, Trash2, Sparkles, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -21,6 +21,7 @@ export const AiAssistantApp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { fetchAllData } = useSupabaseBusinessStore();
@@ -86,6 +87,7 @@ export const AiAssistantApp = () => {
 
       const chatId = await createChat('New Chat', assistantMessage);
       setCurrentChatId(chatId);
+      setIsDrawerOpen(false);
     } catch (error) {
       toast({
         title: "Error",
@@ -205,6 +207,11 @@ export const AiAssistantApp = () => {
     }
   };
 
+  const handleChatSelect = (chat: any) => {
+    setCurrentChatId(chat.id);
+    setIsDrawerOpen(false);
+  };
+
   if (!user) {
     return (
       <div className="flex h-[70vh] items-center justify-center bg-white rounded-2xl">
@@ -219,96 +226,102 @@ export const AiAssistantApp = () => {
     );
   }
 
+  const ChatHistoryContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="p-6 border-b border-border/50 flex-shrink-0">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
+            <Bot className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-dark">AI Assistant</h3>
+            <p className="text-sm text-muted-foreground">Business Intelligence</p>
+          </div>
+        </div>
+        
+        <Button 
+          onClick={createNewChat}
+          className="w-full justify-start"
+          size="sm"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          New Conversation
+        </Button>
+      </div>
+      
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
+        {chats.map(chat => (
+          <div
+            key={chat.id}
+            className={cn(
+              'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
+              currentChatId === chat.id 
+                ? 'bg-primary/10 border border-primary/20' 
+                : 'hover:bg-white hover:shadow-soft'
+            )}
+            onClick={() => handleChatSelect(chat)}
+          >
+            <MessageSquare className={cn(
+              'h-4 w-4 flex-shrink-0',
+              currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
+            )} />
+            
+            {editingChatId === chat.id ? (
+              <Input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    updateChatTitle(chat.id, editTitle || chat.title);
+                  }
+                }}
+                className="h-8 text-sm border-primary/30"
+                autoFocus
+              />
+            ) : (
+              <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
+            )}
+            
+            <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 hover:bg-primary/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingChatId(chat.id);
+                  setEditTitle(chat.title);
+                }}
+              >
+                <Edit3 className="h-3 w-3" />
+              </Button>
+              {chats.length > 1 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteChatHandler(chat.id);
+                  }}
+                >
+                  <Trash2 className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="h-[calc(100vh-12rem)] bg-white rounded-2xl overflow-hidden flex">
-      {/* Chat History Sidebar - Hidden on mobile */}
+      {/* Desktop Chat History Sidebar */}
       {!isMobile && (
         <div className="w-80 border-r border-border/50 bg-gray-50/50 flex flex-col">
-          <div className="p-6 border-b border-border/50 flex-shrink-0">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-dark">AI Assistant</h3>
-                <p className="text-sm text-muted-foreground">Business Intelligence</p>
-              </div>
-            </div>
-            
-            <Button 
-              onClick={createNewChat}
-              className="w-full justify-start"
-              size="sm"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Conversation
-            </Button>
-          </div>
-          
-          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-2">
-            {chats.map(chat => (
-              <div
-                key={chat.id}
-                className={cn(
-                  'group relative flex items-center space-x-3 p-3 rounded-xl cursor-pointer transition-all duration-200',
-                  currentChatId === chat.id 
-                    ? 'bg-primary/10 border border-primary/20' 
-                    : 'hover:bg-white hover:shadow-soft'
-                )}
-                onClick={() => setCurrentChatId(chat.id)}
-              >
-                <MessageSquare className={cn(
-                  'h-4 w-4 flex-shrink-0',
-                  currentChatId === chat.id ? 'text-primary' : 'text-muted-foreground'
-                )} />
-                
-                {editingChatId === chat.id ? (
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    onBlur={() => updateChatTitle(chat.id, editTitle || chat.title)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        updateChatTitle(chat.id, editTitle || chat.title);
-                      }
-                    }}
-                    className="h-8 text-sm border-primary/30"
-                    autoFocus
-                  />
-                ) : (
-                  <span className="text-sm truncate flex-1 text-dark">{chat.title}</span>
-                )}
-                
-                <div className="opacity-0 group-hover:opacity-100 flex space-x-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0 hover:bg-primary/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingChatId(chat.id);
-                      setEditTitle(chat.title);
-                    }}
-                  >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                  {chats.length > 1 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        deleteChatHandler(chat.id);
-                      }}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ChatHistoryContent />
         </div>
       )}
 
@@ -316,6 +329,21 @@ export const AiAssistantApp = () => {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between p-6 border-b border-border/50 flex-shrink-0">
           <div className="flex items-center space-x-3">
+            {isMobile && (
+              <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Menu className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-80 p-0">
+                  <SheetHeader className="p-6 border-b">
+                    <SheetTitle>Chat History</SheetTitle>
+                  </SheetHeader>
+                  <ChatHistoryContent />
+                </SheetContent>
+              </Sheet>
+            )}
             <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
@@ -324,14 +352,15 @@ export const AiAssistantApp = () => {
               <p className="text-sm text-muted-foreground">Business Intelligence</p>
             </div>
           </div>
-          {isMobile && (
+          {!isMobile && (
             <Button 
               onClick={createNewChat}
               size="sm"
               variant="outline"
               className="text-xs px-2 py-1"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3 w-3 mr-1" />
+              New Chat
             </Button>
           )}
         </div>

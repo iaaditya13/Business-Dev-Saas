@@ -38,12 +38,13 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 sm:space-x-6">
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-sm sm:text-lg">A</span>
-                </div>
-                <div>
-                  <h1 className="text-lg sm:text-xl font-bold font-display text-dark">Areion</h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Business Platform</p>
+                <img 
+                  src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
+                  alt="Areion" 
+                  className="h-8 sm:h-10 w-auto object-contain"
+                />
+                <div className="hidden sm:block">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Business Platform</p>
                 </div>
               </div>
             </div>

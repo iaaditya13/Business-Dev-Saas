@@ -8,13 +8,17 @@ export const AppsGrid = () => {
   const [currentApp, setCurrentApp] = useState<string | null>(null);
 
   const handleAppClick = (appId: string, route: string) => {
-    console.log('App clicked:', appId, 'Route:', route);
-    if (['dashboard', 'accounting', 'invoicing', 'crm', 'inventory', 'pos-shop', 'analytics', 'settings', 'calendar', 'messaging', 'security', 'reports', 'ai-assistant'].includes(appId)) {
-      setCurrentApp(appId);
-    } else {
-      // For other apps that aren't implemented yet
-      console.log('Navigating to:', route);
-      window.location.href = route;
+    try {
+      console.log('App clicked:', appId, 'Route:', route);
+      if (['dashboard', 'accounting', 'invoicing', 'crm', 'inventory', 'pos-shop', 'analytics', 'settings', 'calendar', 'messaging', 'security', 'reports', 'ai-assistant'].includes(appId)) {
+        setCurrentApp(appId);
+      } else {
+        // For other apps that aren't implemented yet
+        console.log('Navigating to:', route);
+        window.location.href = route;
+      }
+    } catch (error) {
+      console.error('Error handling app click:', error);
     }
   };
 

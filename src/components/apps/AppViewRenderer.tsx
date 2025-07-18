@@ -22,35 +22,47 @@ interface AppViewRendererProps {
 
 export const AppViewRenderer = ({ currentApp, onBackToApps }: AppViewRendererProps) => {
   const renderAppContent = () => {
-    switch (currentApp) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'ai-assistant':
-        return <AiAssistantApp />;
-      case 'accounting':
-        return <Accounting />;
-      case 'invoicing':
-        return <Invoicing />;
-      case 'crm':
-        return <CRM />;
-      case 'inventory':
-        return <Inventory />;
-      case 'pos-shop':
-        return <POSShop />;
-      case 'analytics':
-        return <Analytics />;
-      case 'settings':
-        return <Settings />;
-      case 'calendar':
-        return <Calendar />;
-      case 'messaging':
-        return <Messaging />;
-      case 'security':
-        return <Security />;
-      case 'reports':
-        return <Reports />;
-      default:
-        return null;
+    try {
+      switch (currentApp) {
+        case 'dashboard':
+          return <Dashboard />;
+        case 'ai-assistant':
+          return <AiAssistantApp />;
+        case 'accounting':
+          return <Accounting />;
+        case 'invoicing':
+          return <Invoicing />;
+        case 'crm':
+          return <CRM />;
+        case 'inventory':
+          return <Inventory />;
+        case 'pos-shop':
+          return <POSShop />;
+        case 'analytics':
+          return <Analytics />;
+        case 'settings':
+          return <Settings />;
+        case 'calendar':
+          return <Calendar />;
+        case 'messaging':
+          return <Messaging />;
+        case 'security':
+          return <Security />;
+        case 'reports':
+          return <Reports />;
+        default:
+          return null;
+      }
+    } catch (error) {
+      console.error('Error rendering app:', error);
+      return (
+        <div className="p-6 text-center">
+          <h3 className="text-lg font-semibold text-red-600">App Loading Error</h3>
+          <p className="text-muted-foreground mt-2">
+            There was an error loading this app. Please try again.
+          </p>
+        </div>
+      );
     }
   };
 

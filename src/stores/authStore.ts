@@ -9,6 +9,8 @@ interface AuthStore {
   session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  showAuth: boolean;
+  setShowAuth: (show: boolean) => void;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, fullName: string, businessName?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -22,6 +24,8 @@ export const useAuthStore = create<AuthStore>()(
       session: null,
       isAuthenticated: false,
       isLoading: true,
+      showAuth: false,
+      setShowAuth: (show: boolean) => set({ showAuth: show }),
 
       initialize: async () => {
         try {

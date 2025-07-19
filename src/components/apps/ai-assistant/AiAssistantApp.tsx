@@ -317,7 +317,7 @@ export const AiAssistantApp = () => {
   );
 
   return (
-    <div className="h-[calc(100vh-12rem)] bg-white rounded-2xl overflow-hidden flex">
+    <div className="h-[calc(100vh-8rem)] bg-white rounded-2xl overflow-hidden flex">
       {/* Desktop Chat History Sidebar */}
       {!isMobile && (
         <div className="w-80 border-r border-border/50 bg-gray-50/50 flex flex-col">

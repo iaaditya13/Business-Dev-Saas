@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,29 +7,29 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, Building2, Sparkles, Shield, Zap } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Building } from 'lucide-react';
 
-export const AuthLayout = () => {
+interface AuthLayoutProps {
+  onBackToLanding?: () => void;
+}
+
+export const AuthLayout = ({ onBackToLanding }: AuthLayoutProps) => {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ email: '', password: '', fullName: '', businessName: '' });
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success' | 'info'; text: string } | null>(null);
+  const [isLogin, setIsLogin] = useState(true);
   const { login, signup } = useAuthStore();
 
-  // Pre-fill demo credentials
   const fillDemoCredentials = () => {
     setLoginData({ email: 'demo@yourapp.com', password: 'demo123' });
+    setIsLogin(true);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     setMessage(null);
-    
-    // Show info message for demo account
-    if (loginData.email === 'demo@yourapp.com') {
-      setMessage({ type: 'info', text: 'Setting up demo account with sample data...' });
-    }
     
     try {
       const result = await login(loginData.email, loginData.password);
@@ -36,13 +37,13 @@ export const AuthLayout = () => {
         setMessage({ type: 'error', text: result.error || 'Login failed' });
       }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
     setMessage(null);
     
     try {
@@ -63,224 +64,298 @@ export const AuthLayout = () => {
         setMessage({ type: 'error', text: result.error || 'Signup failed' });
       }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Animated Background Elements - Reduced sizes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Floating shapes - smaller */}
-        <div className="absolute top-10 left-8 w-12 h-12 bg-primary/10 rounded-full animate-float opacity-60" />
-        <div className="absolute top-20 right-16 w-6 h-6 bg-secondary/20 rounded-full animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-20 left-1/4 w-8 h-8 bg-accent/15 rounded-full animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/4 right-1/3 w-4 h-4 bg-primary/20 rounded-full animate-float" style={{ animationDelay: '0.5s' }} />
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-secondary/10 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-40 -left-20 w-60 h-60 bg-secondary/15 rounded-full blur-2xl animate-bounce"></div>
+        <div className="absolute bottom-20 right-20 w-40 h-40 bg-warning/20 rounded-full blur-xl animate-pulse"></div>
         
-        {/* Geometric shapes - smaller */}
-        <div className="absolute top-12 right-12 w-16 h-16 border border-primary/20 rotate-45 animate-pulse opacity-40" />
-        <div className="absolute bottom-16 right-8 w-10 h-10 border border-secondary/20 rounded-lg rotate-12 animate-pulse opacity-30" style={{ animationDelay: '1.5s' }} />
+        {/* Geometric Shapes */}
+        <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-primary/30 rotate-45 animate-spin"></div>
+        <div className="absolute top-3/4 right-1/3 w-6 h-6 bg-secondary/40 rounded-full animate-bounce"></div>
+        <div className="absolute bottom-1/3 left-1/5 w-3 h-3 bg-warning/50 animate-pulse"></div>
         
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(192,74,226,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(192,74,226,0.03)_1px,transparent_1px)] bg-[size:20px_20px] opacity-50" />
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
-      <div className="relative z-10 min-h-screen flex items-center justify-center p-3 sm:p-4">
-        <div className="w-full max-w-md">
-          {/* Logo Section - Reduced margins */}
-          <div className="text-center mb-4 sm:mb-6">
-            <div className="flex items-center justify-center mb-2 sm:mb-3">
+      <div className="relative z-10 flex min-h-screen">
+        {/* Left Side - Logo and Info */}
+        <div className="hidden lg:flex lg:w-1/2 flex-col justify-center items-center p-8 relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+          <div className="relative z-10 text-center max-w-md">
+            <img 
+              src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
+              alt="Areion" 
+              className="h-16 w-auto mx-auto mb-6"
+            />
+            <h2 className="text-2xl font-bold text-dark mb-3">
+              Welcome to Areion
+            </h2>
+            <p className="text-base text-muted-foreground mb-6">
+              Transform your business with our comprehensive management platform powered by AI intelligence.
+            </p>
+            <div className="space-y-2 text-left">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-sm text-muted-foreground">Advanced Analytics & Insights</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                <span className="text-sm text-muted-foreground">AI-Powered Business Intelligence</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-warning rounded-full"></div>
+                <span className="text-sm text-muted-foreground">Complete Financial Management</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side - Auth Form */}
+        <div className="flex-1 flex flex-col justify-center items-center p-4 lg:p-8">
+          <div className="w-full max-w-md">
+            {/* Back Button */}
+            {onBackToLanding && (
+              <Button
+                variant="ghost"
+                onClick={onBackToLanding}
+                className="mb-4 p-2 hover:bg-primary/10"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            )}
+            
+            {/* Mobile Logo */}
+            <div className="lg:hidden text-center mb-4">
               <img 
                 src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
                 alt="Areion" 
-                className="h-10 sm:h-12 lg:h-14 w-auto object-contain"
+                className="h-10 w-auto mx-auto mb-3"
               />
             </div>
-            <p className="text-muted-foreground text-xs sm:text-sm flex items-center justify-center gap-2">
-              <Shield className="w-3 h-3" />
-              Complete Business Management Platform
-              <Sparkles className="w-3 h-3" />
-            </p>
-          </div>
 
-          <Card className="card-elevated-lg backdrop-blur-sm bg-card/80 border-border/50 shadow-brand">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-lg sm:text-xl font-bold text-gradient">Welcome Back</CardTitle>
-              <CardDescription className="text-xs sm:text-sm">Access your business dashboard</CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              {message && (
-                <Alert className={`border-l-4 ${
-                  message.type === 'error' ? 'border-destructive bg-destructive/5' : 
-                  message.type === 'success' ? 'border-success bg-success/5' : 
-                  'border-primary bg-primary/5'
-                }`}>
-                  <AlertDescription className={`text-xs ${
-                    message.type === 'error' ? 'text-destructive' : 
-                    message.type === 'success' ? 'text-success' : 
-                    'text-primary'
+            <Card className="shadow-brand border-border/50 bg-white/80 backdrop-blur-sm">
+              <CardHeader className="space-y-2 pb-3">
+                <CardTitle className="text-xl font-bold text-dark text-center">
+                  Get Started
+                </CardTitle>
+                <CardDescription className="text-muted-foreground text-center text-sm">
+                  Access your business management platform
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-4">
+                {message && (
+                  <Alert className={`${
+                    message.type === 'error' ? 'border-destructive bg-destructive/10' :
+                    message.type === 'success' ? 'border-success bg-success/10' :
+                    'border-primary bg-primary/10'
                   }`}>
-                    {message.text}
-                  </AlertDescription>
-                </Alert>
-              )}
+                    <AlertDescription className={`${
+                      message.type === 'error' ? 'text-destructive' :
+                      message.type === 'success' ? 'text-success' :
+                      'text-primary'
+                    }`}>
+                      {message.text}
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-              <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4">
-                  <TabsTrigger value="login" className="text-xs sm:text-sm">Sign In</TabsTrigger>
-                  <TabsTrigger value="signup" className="text-xs sm:text-sm">Sign Up</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="space-y-4">
-                  {/* Demo Account Section - More compact */}
-                  <div className="p-3 bg-gradient-to-r from-primary/5 to-secondary/5 border border-primary/20 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="w-3 h-3 text-primary" />
-                      <p className="text-xs font-medium text-primary">Quick Demo Access</p>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={fillDemoCredentials}
-                      className="w-full mb-1 hover:bg-primary/10 h-8 text-xs"
+                <Tabs value={isLogin ? "login" : "signup"} className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-gray-100/70 h-9">
+                    <TabsTrigger 
+                      value="login" 
+                      onClick={() => setIsLogin(true)}
+                      className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
                     >
-                      Use Demo Credentials
-                    </Button>
-                    <p className="text-xs text-muted-foreground">
-                      Email: demo@yourapp.com | Password: demo123
+                      Login
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="signup" 
+                      onClick={() => setIsLogin(false)}
+                      className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-sm"
+                    >
+                      Sign Up
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="login" className="space-y-4 mt-4">
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-sm font-medium text-dark">
+                            Email
+                          </Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="email"
+                              type="email"
+                              placeholder="Enter your email"
+                              value={loginData.email}
+                              onChange={(e) => setLoginData(prev => ({ ...prev, email: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="password" className="text-sm font-medium text-dark">
+                            Password
+                          </Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="password"
+                              type="password"
+                              placeholder="Enter your password"
+                              value={loginData.password}
+                              onChange={(e) => setLoginData(prev => ({ ...prev, password: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                              required
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full shadow-brand hover:shadow-brand-hover h-9"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Signing in...
+                          </>
+                        ) : (
+                          'Sign In'
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+
+                  <TabsContent value="signup" className="space-y-4 mt-4">
+                    <form onSubmit={handleSignup} className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <Label htmlFor="fullName" className="text-sm font-medium text-dark">
+                            Full Name
+                          </Label>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="fullName"
+                              type="text"
+                              placeholder="Enter your full name"
+                              value={signupData.fullName}
+                              onChange={(e) => setSignupData(prev => ({ ...prev, fullName: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="signupEmail" className="text-sm font-medium text-dark">
+                            Email
+                          </Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="signupEmail"
+                              type="email"
+                              placeholder="Enter your email"
+                              value={signupData.email}
+                              onChange={(e) => setSignupData(prev => ({ ...prev, email: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="signupPassword" className="text-sm font-medium text-dark">
+                            Password
+                          </Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="signupPassword"
+                              type="password"
+                              placeholder="Create a password"
+                              value={signupData.password}
+                              onChange={(e) => setSignupData(prev => ({ ...prev, password: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="businessName" className="text-sm font-medium text-dark">
+                            Business Name (Optional)
+                          </Label>
+                          <div className="relative">
+                            <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                            <Input
+                              id="businessName"
+                              type="text"
+                              placeholder="Enter your business name"
+                              value={signupData.businessName}
+                              onChange={(e) => setSignupData(prev => ({ ...prev, businessName: e.target.value }))}
+                              className="pl-10 border-border/50 bg-white/70 focus:bg-white h-9"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        type="submit" 
+                        className="w-full shadow-brand hover:shadow-brand-hover h-9"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating account...
+                          </>
+                        ) : (
+                          'Create Account'
+                        )}
+                      </Button>
+                    </form>
+                  </TabsContent>
+                </Tabs>
+
+                {/* Demo Account Section */}
+                <div className="mt-4 p-4 bg-gradient-to-r from-primary/5 to-secondary/5 rounded-xl border border-border/50">
+                  <div className="text-center mb-3">
+                    <h3 className="text-base font-semibold text-dark mb-1">Try Demo Account</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Experience the platform with pre-loaded demo data
                     </p>
                   </div>
-
-                  <form onSubmit={handleLogin} className="space-y-3">
-                    <div className="space-y-1">
-                      <Label htmlFor="email" className="text-xs font-medium">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={loginData.email}
-                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="Enter your password"
-                          value={loginData.password}
-                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full btn-brand h-9" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                          <span className="text-sm">
-                            {loginData.email === 'demo@yourapp.com' ? 'Setting up demo...' : 'Signing in...'}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-sm">Sign In</span>
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup" className="space-y-4">
-                  <form onSubmit={handleSignup} className="space-y-3">
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-name" className="text-xs font-medium">Full Name</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Enter your full name"
-                          value={signupData.fullName}
-                          onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-business" className="text-xs font-medium">Business Name <span className="text-muted-foreground text-xs">(Optional)</span></Label>
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="signup-business"
-                          type="text"
-                          placeholder="Enter your business name"
-                          value={signupData.businessName}
-                          onChange={(e) => setSignupData({ ...signupData, businessName: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-email" className="text-xs font-medium">Email Address</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={signupData.email}
-                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="signup-password" className="text-xs font-medium">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-3 h-3" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Create a password (min. 6 characters)"
-                          value={signupData.password}
-                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                          className="pl-9 input-focus h-9 text-sm"
-                          required
-                          minLength={6}
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full btn-brand h-9" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                          <span className="text-sm">Creating account...</span>
-                        </>
-                      ) : (
-                        <span className="text-sm">Create Account</span>
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+                  <Button 
+                    onClick={fillDemoCredentials}
+                    variant="outline" 
+                    className="w-full border-primary/30 hover:bg-primary/10 h-9"
+                  >
+                    Use Demo Account
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

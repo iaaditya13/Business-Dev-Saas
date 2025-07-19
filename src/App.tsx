@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useAuthStore } from '@/stores/authStore';
 import { AuthLayout } from '@/components/auth/AuthLayout';
+import { LandingPage } from '@/components/landing/LandingPage';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -14,7 +15,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-  const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const { isAuthenticated, isLoading, showAuth, setShowAuth, initialize } = useAuthStore();
 
   useEffect(() => {
     initialize();
@@ -29,7 +30,10 @@ const App = () => {
   }
 
   if (!isAuthenticated) {
-    return <AuthLayout />;
+    if (showAuth) {
+      return <AuthLayout onBackToLanding={() => setShowAuth(false)} />;
+    }
+    return <LandingPage onShowAuth={() => setShowAuth(true)} />;
   }
 
   return (

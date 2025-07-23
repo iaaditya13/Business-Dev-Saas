@@ -93,7 +93,7 @@ export const AuthLayout = ({ onBackToLanding }: AuthLayoutProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-16 w-auto mx-auto mb-6"
+              className="h-20 w-auto mx-auto mb-6"
             />
             <h2 className="text-2xl font-bold text-dark mb-3">
               Welcome to Areion
@@ -138,7 +138,7 @@ export const AuthLayout = ({ onBackToLanding }: AuthLayoutProps) => {
               <img 
                 src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
                 alt="Areion" 
-                className="h-10 w-auto mx-auto mb-3"
+                className="h-14 w-auto mx-auto mb-3"
               />
             </div>
 

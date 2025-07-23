@@ -77,7 +77,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-10 w-auto"
+              className="h-16 w-auto"
             />
           </div>
           <Button 
@@ -191,7 +191,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             </div>
             
             <div className="relative">
-              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-8 border border-border/50">
+              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-6 border border-border/50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-soft">
                     <div className="flex items-center space-x-3">
@@ -335,7 +335,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-8 w-auto"
+              className="h-12 w-auto"
             />
           </div>
           <p className="text-muted-foreground">

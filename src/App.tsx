@@ -16,6 +16,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const { isAuthenticated, isLoading, showAuth, setShowAuth, initialize } = useAuthStore();
+  console.log('App render - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading, 'showAuth:', showAuth);
 
   useEffect(() => {
     initialize();

@@ -148,9 +148,9 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-16 bg-white/50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+      <section className="px-6 py-20 bg-white/50 min-h-screen flex items-center">
+        <div className="max-w-7xl mx-auto w-full">
+          <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-dark mb-4">
               Everything Your Business Needs
             </h2>
@@ -159,8 +159,8 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-6 items-start">
-            <div className="space-y-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center justify-center max-w-6xl mx-auto">
+            <div className="space-y-6">
               {features.map((feature, index) => (
                 <Card 
                   key={index}
@@ -171,7 +171,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
                   }`}
                   onClick={() => setActiveFeature(index)}
                 >
-                  <CardContent className="p-5">
+                  <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                         activeFeature === index 
@@ -190,16 +190,16 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
               ))}
             </div>
             
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-4 border border-border/50">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-soft">
+            <div className="relative flex items-center justify-center">
+              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-6 border border-border/50 w-full max-w-md">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between p-5 bg-white rounded-xl shadow-soft">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                        {features[activeFeature] && React.createElement(features[activeFeature].icon, { className: "h-5 w-5 text-white" })}
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                        {features[activeFeature] && React.createElement(features[activeFeature].icon, { className: "h-6 w-6 text-white" })}
                       </div>
                       <div>
-                        <h4 className="font-semibold text-dark">{features[activeFeature]?.title}</h4>
+                        <h4 className="font-semibold text-dark text-lg">{features[activeFeature]?.title}</h4>
                         <p className="text-sm text-muted-foreground">Active Feature</p>
                       </div>
                     </div>
@@ -207,12 +207,12 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-xl shadow-soft">
-                      <div className="text-2xl font-bold text-primary mb-1">98.5%</div>
+                    <div className="bg-white p-6 rounded-xl shadow-soft text-center">
+                      <div className="text-3xl font-bold text-primary mb-2">98.5%</div>
                       <div className="text-sm text-muted-foreground">Efficiency</div>
                     </div>
-                    <div className="bg-white p-4 rounded-xl shadow-soft">
-                      <div className="text-2xl font-bold text-secondary mb-1">24/7</div>
+                    <div className="bg-white p-6 rounded-xl shadow-soft text-center">
+                      <div className="text-3xl font-bold text-secondary mb-2">24/7</div>
                       <div className="text-sm text-muted-foreground">Support</div>
                     </div>
                   </div>

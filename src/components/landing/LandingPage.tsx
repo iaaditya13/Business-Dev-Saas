@@ -77,7 +77,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-20 w-auto"
+              className="h-24 w-auto"
             />
           </div>
           <Button 
@@ -148,9 +148,9 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
       </section>
 
       {/* Features Section */}
-      <section className="px-6 py-20 bg-white/50">
+      <section className="px-6 py-16 bg-white/50">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-dark mb-4">
               Everything Your Business Needs
             </h2>
@@ -159,8 +159,8 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
-            <div className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-6 items-start">
+            <div className="space-y-4">
               {features.map((feature, index) => (
                 <Card 
                   key={index}
@@ -171,7 +171,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
                   }`}
                   onClick={() => setActiveFeature(index)}
                 >
-                  <CardContent className="p-6">
+                  <CardContent className="p-5">
                     <div className="flex items-start space-x-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                         activeFeature === index 
@@ -190,7 +190,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
               ))}
             </div>
             
-            <div className="relative mt-6">
+            <div className="relative">
               <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-4 border border-border/50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-soft">
@@ -335,7 +335,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </div>
           <p className="text-muted-foreground">

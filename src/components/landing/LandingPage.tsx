@@ -77,7 +77,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <img 
               src="/lovable-uploads/ea58bab1-d210-4405-b1bc-714fe1e31509.png" 
               alt="Areion" 
-              className="h-16 w-auto"
+              className="h-20 w-auto"
             />
           </div>
           <Button 
@@ -159,7 +159,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
               {features.map((feature, index) => (
                 <Card 
@@ -190,8 +190,8 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
               ))}
             </div>
             
-            <div className="relative">
-              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-6 border border-border/50">
+            <div className="relative mt-6">
+              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl p-4 border border-border/50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 bg-white rounded-xl shadow-soft">
                     <div className="flex items-center space-x-3">
@@ -316,7 +316,7 @@ export const LandingPage = ({ onShowAuth }: LandingPageProps) => {
             <Button 
               variant="outline" 
               size="lg"
-              className="text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10"
+              className="text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10 hover:text-white"
             >
               Schedule Demo
             </Button>
